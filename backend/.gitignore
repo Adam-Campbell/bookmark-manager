@@ -1,0 +1,20 @@
+node_modules
+# Output from TypeScript build step
+dist
+
+.env
+
+# Prisma files
+prisma/generated/
+
+
+# Logs and system files
+*.log
+.DS_Store
+
+
+/generated/prisma
+
+prisma/dev.db
+
+/generate/prisma
