@@ -6,6 +6,7 @@
         "fastify-plugin": "^5.0.1"
     },
     "devDependencies": {
+        "@types/node": "^24.3.0",
         "prisma": "^6.14.0",
         "tsx": "^4.20.4",
         "typescript": "^5.9.2"
@@ -13,6 +14,7 @@
     "name": "backend",
     "version": "1.0.0",
     "main": "index.js",
+    "type": "module",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "tsx src/server.ts",
