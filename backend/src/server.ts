@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import prismaPlugin from "./plugins/prismaPlugin.ts";
 import authUserPlugin from "./plugins/authUserPlugin.ts";
 import betterAuthAdapterPlugin from "./plugins/betterAuthAdapterPlugin.ts";
+import tagRoutes from "./routes/tagRoutes.ts";
 
 const fastify = Fastify({
     logger: true,
@@ -10,6 +11,7 @@ const fastify = Fastify({
 fastify.register(prismaPlugin);
 fastify.register(authUserPlugin);
 fastify.register(betterAuthAdapterPlugin);
+fastify.register(tagRoutes, { prefix: "/api/tags" });
 
 try {
     await fastify.listen({ port: 3000, host: "127.0.0.1" });
