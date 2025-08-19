@@ -1,5 +1,5 @@
 import { FastifyPluginAsync, FastifyRequest } from "fastify";
-import { Prisma } from "../../generated/prisma/index.js";
+import { Prisma, Bookmark } from "../../generated/prisma/index.js";
 
 const routes: FastifyPluginAsync = async (fastify, options) => {
     const { prisma } = fastify;
@@ -27,12 +27,27 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
             const id = Number(request.params.id);
             const collection = await prisma.collection.findUnique({
                 where: { id, userId },
+                include: {
+                    bookmarks: {
+                        orderBy: { bookmarkIndex: "asc" },
+                        select: {
+                            bookmarkIndex: true,
+                            bookmark: true,
+                        },
+                    },
+                },
             });
             if (!collection) {
                 return reply
                     .status(404)
                     .send({ error: "Collection not found" });
             }
+            collection.bookmarks = collection.bookmarks.map(
+                (bic: { bookmarkIndex: number; bookmark: Bookmark }) => ({
+                    ...bic.bookmark,
+                    bookmarkIndex: bic.bookmarkIndex,
+                })
+            );
             reply.send(collection);
         }
     );
@@ -122,6 +137,78 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
                         .status(404)
                         .send({ error: "Collection not found" });
                 }
+                fastify.log.error(error);
+                return reply
+                    .status(500)
+                    .send({ error: "Internal Server Error" });
+            }
+        }
+    );
+
+    fastify.put(
+        "/:id/bookmarks",
+        async (
+            request: FastifyRequest<{
+                Params: { id: string };
+                Body: { bookmarkIds: number[] };
+            }>,
+            reply
+        ) => {
+            const userId = request.user?.id;
+            if (!userId) {
+                return reply.status(401).send({ error: "Unauthorized" });
+            }
+            const collectionId = Number(request.params.id);
+            const { bookmarkIds } = request.body;
+
+            const collection = await prisma.collection.findUnique({
+                where: {
+                    id: collectionId,
+                    userId,
+                },
+            });
+            if (!collection) {
+                return reply
+                    .status(404)
+                    .send({ error: "Collection not found" });
+            }
+
+            const validBookmarks: { id: number }[] =
+                await prisma.bookmark.findMany({
+                    where: {
+                        id: { in: bookmarkIds },
+                        userId,
+                    },
+                    select: { id: true },
+                });
+
+            const validBookmarkIds = validBookmarks.map(
+                (bookmark) => bookmark.id
+            );
+
+            try {
+                await prisma.$transaction([
+                    prisma.bookmarksInCollections.deleteMany({
+                        where: { collectionId },
+                    }),
+                    prisma.bookmarksInCollections.createMany({
+                        data: validBookmarkIds.map((bookmarkId, index) => ({
+                            collectionId,
+                            bookmarkId,
+                            bookmarkIndex: index,
+                        })),
+                    }),
+                ]);
+
+                const updatedBookmarks =
+                    await prisma.bookmarksInCollections.findMany({
+                        where: { collectionId },
+                        orderBy: { bookmarkIndex: "asc" },
+                        include: { bookmark: true },
+                    });
+
+                reply.send({ collectionId, updatedBookmarks });
+            } catch (error) {
                 fastify.log.error(error);
                 return reply
                     .status(500)
