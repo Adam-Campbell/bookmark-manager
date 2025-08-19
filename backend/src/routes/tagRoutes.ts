@@ -5,7 +5,6 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
     const { prisma } = fastify;
 
     fastify.get("/", async (request: FastifyRequest, reply) => {
-        // Your logic to get tags
         const userId = request.user?.id;
         if (!userId) {
             return reply.status(401).send({ error: "Unauthorized" });
@@ -19,7 +18,6 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
     fastify.post(
         "/",
         async (request: FastifyRequest<{ Body: { name: string } }>, reply) => {
-            // Your logic to create a new tag
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
@@ -41,7 +39,6 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
             }>,
             reply
         ) => {
-            // Your logic to update a tag
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
@@ -71,7 +68,6 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
     fastify.delete(
         "/:id",
         async (request: FastifyRequest<{ Params: { id: string } }>, reply) => {
-            // Your logic to delete a tag
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
