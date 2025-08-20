@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router";
-import RootLayout from "./pages/Root";
+import RootLayout, { rootLoader } from "./pages/Root";
 import SignUpPage from "./pages/SignUp";
 import SignInPage from "./pages/SignIn";
 import AboutPage from "./pages/About";
@@ -12,6 +12,7 @@ export const router = createBrowserRouter([
         path: "/",
         Component: RootLayout,
         id: "root",
+        loader: rootLoader,
         children: [
             {
                 index: true,
