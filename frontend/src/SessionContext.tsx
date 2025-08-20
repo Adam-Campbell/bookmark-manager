@@ -53,7 +53,7 @@ export const SessionProvider = ({
             token: data.token,
             user: data.user,
         });
-        navigate("/");
+        navigate("/bookmarks");
     };
 
     const signIn = async (email: string, password: string) => {
@@ -69,7 +69,7 @@ export const SessionProvider = ({
             token: data.token,
             user: data.user,
         });
-        navigate("/");
+        navigate("/bookmarks");
     };
 
     const signOut = async () => {
@@ -79,7 +79,7 @@ export const SessionProvider = ({
             return;
         }
         setData({ token: null, user: null });
-        navigate("/auth");
+        navigate("/sign-in");
     };
 
     return (
