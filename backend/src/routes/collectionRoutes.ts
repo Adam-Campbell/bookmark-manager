@@ -32,7 +32,9 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
                         orderBy: { bookmarkIndex: "asc" },
                         select: {
                             bookmarkIndex: true,
-                            bookmark: true,
+                            bookmark: {
+                                include: { tags: true },
+                            },
                         },
                     },
                 },
