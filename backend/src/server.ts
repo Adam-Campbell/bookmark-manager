@@ -5,10 +5,26 @@ import betterAuthAdapterPlugin from "./plugins/betterAuthAdapterPlugin.ts";
 import tagRoutes from "./routes/tagRoutes.ts";
 import bookmarkRoutes from "./routes/bookmarkRoutes.ts";
 import collectionRoutes from "./routes/collectionRoutes.ts";
+import dotenv from "dotenv";
+import fastifyCors from "@fastify/cors";
+
+dotenv.config();
 
 const fastify = Fastify({
     logger: true,
 });
+
+if (process.env.NODE_ENV === "development") {
+    console.log("Development mode: Enabling CORS for all origins");
+    // Configure CORS policy
+    await fastify.register(fastifyCors, {
+        origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+        credentials: true,
+        maxAge: 86400,
+    });
+}
 
 fastify.register(prismaPlugin);
 fastify.register(authUserPlugin);
