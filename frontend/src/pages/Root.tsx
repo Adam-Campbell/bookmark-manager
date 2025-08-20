@@ -1,15 +1,19 @@
 import { Outlet, useLoaderData } from "react-router";
 import { authClient } from "../authClient";
 import { SessionProvider } from "../SessionContext";
+import NavBar from "../components/NavBar";
+import MobileNav from "../components/MobileNav";
 
 export default function RootLayout() {
     const sessionData = useLoaderData();
     return (
         <>
             <SessionProvider initialSessionData={sessionData}>
+                <NavBar />
                 <main>
                     <Outlet />
                 </main>
+                <MobileNav />
             </SessionProvider>
         </>
     );
