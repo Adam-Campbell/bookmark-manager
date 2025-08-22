@@ -8,6 +8,7 @@ type TagData = {
 
 type CollectionData = {
     id: number;
+    title: string;
 };
 
 type BookmarkResourceBody = {
