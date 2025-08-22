@@ -6,88 +6,24 @@ import {
     DialogActions,
     Button,
     TextField,
-    Autocomplete,
 } from "@mui/material";
-import { useBookmarkModal } from "../BookmarkModalContext";
-
-const tagsData = [
-    "abstract-algebra",
-    "action",
-    "adventure",
-    "art",
-    "backend",
-    "book-review",
-    "booktalk",
-    "css",
-    "database",
-    "design",
-    "design-patterns",
-    "development",
-    "devops",
-    "digitalocean",
-    "discussion",
-    "dnd",
-    "embedded",
-    "fantasy",
-    "fastify",
-    "frontend",
-    "grid",
-    "history",
-    "hosting",
-    "indexeddb",
-    "inspiration",
-    "javascript",
-    "layout",
-    "let's-play",
-    "mathematics",
-    "military",
-    "nodejs",
-    "orm",
-    "politics",
-    "prisma",
-    "programming",
-    "react",
-    "rpg",
-    "screenwriting",
-    "set-theory",
-    "sqlite",
-    "storage",
-    "storytelling",
-    "strategy",
-    "tabletop",
-    "theoretical-computer-science",
-    "topology",
-    "typescript",
-    "webdev",
-    "writing-inspiration",
-    "writing",
-    "youtube",
-];
-
-const collectionsData = [
-    "Bookmarks",
-    "Reading List",
-    "Favorites",
-    "To Read",
-    "Inspiration",
-    "Ideas",
-    "Projects",
-    "Work",
-    "Personal",
-    "Archived",
-    "React tutorials",
-    "Web Development",
-    "Math",
-    "Let's Plays",
-];
+import { useBookmarkModal } from "../../BookmarkModalContext";
+import { type TagRepresentation, type CollectionRepresentation } from "./types";
+import { TagsAutocomplete } from "./TagsAutocomplete";
+import { CollectionsAutocomplete } from "./CollectionsAutocomplete";
+import { useSession } from "../../SessionContext";
 
 export default function AddBookmarkModal() {
     const { isOpen, closeModal } = useBookmarkModal();
     const [bookmarkTitle, setBookmarkTitle] = useState("");
     const [bookmarkUrl, setBookmarkUrl] = useState("");
     const [bookmarkDescription, setBookmarkDescription] = useState("");
-    const [chosenTags, setChosenTags] = useState<string[]>([]);
-    const [chosenCollections, setChosenCollections] = useState<string[]>([]);
+    const [chosenTags, setChosenTags] = useState<TagRepresentation[]>([]);
+    const [chosenCollections, setChosenCollections] = useState<
+        CollectionRepresentation[]
+    >([]);
+
+    const { isLoggedIn } = useSession();
 
     useEffect(() => {
         if (isOpen) {
@@ -108,6 +44,10 @@ export default function AddBookmarkModal() {
             tags: chosenTags,
             collections: chosenCollections,
         });
+    }
+
+    if (!isLoggedIn) {
+        return null;
     }
 
     return (
@@ -145,40 +85,13 @@ export default function AddBookmarkModal() {
                         value={bookmarkDescription}
                         onChange={(e) => setBookmarkDescription(e.target.value)}
                     />
-                    <Autocomplete
-                        multiple
-                        freeSolo
-                        options={tagsData}
-                        value={chosenTags}
-                        sx={{ mb: 2 }}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                variant="filled"
-                                label="Add Tags"
-                                placeholder="Add Tags"
-                            />
-                        )}
-                        onChange={(_event, value, _reason, _details) => {
-                            setChosenTags(value);
-                        }}
+                    <TagsAutocomplete
+                        chosenTags={chosenTags}
+                        handleTagsChange={setChosenTags}
                     />
-                    <Autocomplete
-                        multiple
-                        options={collectionsData}
-                        value={chosenCollections}
-                        sx={{ mb: 2 }}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                variant="filled"
-                                label="Add to Collection"
-                                placeholder="Add to Collection"
-                            />
-                        )}
-                        onChange={(_event, value, _reason, _details) => {
-                            setChosenCollections(value);
-                        }}
+                    <CollectionsAutocomplete
+                        chosenCollections={chosenCollections}
+                        handleCollectionsChange={setChosenCollections}
                     />
                 </form>
             </DialogContent>

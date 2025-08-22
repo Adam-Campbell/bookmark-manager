@@ -3,9 +3,11 @@ import { authClient } from "../authClient";
 import { SessionProvider } from "../SessionContext";
 import NavBar from "../components/NavBar";
 import MobileNav from "../components/MobileNav";
+import AddBookmarkModal from "../components/AddBookmarkModal";
 
 export default function RootLayout() {
     const sessionData = useLoaderData();
+    console.log(sessionData);
     return (
         <>
             <SessionProvider initialSessionData={sessionData}>
@@ -14,6 +16,7 @@ export default function RootLayout() {
                     <Outlet />
                 </main>
                 <MobileNav />
+                <AddBookmarkModal />
             </SessionProvider>
         </>
     );

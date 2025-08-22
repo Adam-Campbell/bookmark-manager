@@ -7,7 +7,6 @@ import { router } from "./router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./http";
 import { BookmarkModalProvider } from "./BookmarkModalContext";
-import AddBookmarkModal from "./components/AddBookmarkModal";
 
 function App() {
     return (
@@ -16,7 +15,6 @@ function App() {
             <QueryClientProvider client={queryClient}>
                 <BookmarkModalProvider>
                     <RouterProvider router={router} />
-                    <AddBookmarkModal />
                 </BookmarkModalProvider>
             </QueryClientProvider>
         </ThemeProvider>

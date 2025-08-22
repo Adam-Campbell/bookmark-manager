@@ -20,6 +20,7 @@ type SessionData = {
 type SessionContextValue = {
     token: string | null;
     user: UserData | null;
+    isLoggedIn: Boolean;
     signIn: (email: string, password: string) => Promise<void>;
     signUp: (email: string, password: string, name: string) => Promise<void>;
     signOut: () => Promise<void>;
@@ -87,6 +88,7 @@ export const SessionProvider = ({
             value={{
                 token: data.token,
                 user: data.user,
+                isLoggedIn: Boolean(data.token),
                 signUp,
                 signIn,
                 signOut,
