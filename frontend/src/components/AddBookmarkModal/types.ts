@@ -26,7 +26,7 @@ export type Collection = {
 };
 
 export type CollectionRepresentation = {
-    id: number | null;
+    id: number;
     title: string;
 };
 
@@ -35,4 +35,12 @@ export type CollectionsAutocompleteProps = {
     handleCollectionsChange: React.Dispatch<
         React.SetStateAction<CollectionRepresentation[]>
     >;
+};
+
+export type BookmarkResourceBody = {
+    title: string;
+    url: string;
+    description?: string;
+    tags?: TagRepresentation[];
+    collections?: CollectionRepresentation[];
 };

@@ -6,12 +6,19 @@ import {
     DialogActions,
     Button,
     TextField,
+    CircularProgress,
 } from "@mui/material";
 import { useBookmarkModal } from "../../BookmarkModalContext";
-import { type TagRepresentation, type CollectionRepresentation } from "./types";
+import {
+    type TagRepresentation,
+    type CollectionRepresentation,
+    type BookmarkResourceBody,
+} from "./types";
 import { TagsAutocomplete } from "./TagsAutocomplete";
 import { CollectionsAutocomplete } from "./CollectionsAutocomplete";
 import { useSession } from "../../SessionContext";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "../../http";
 
 export default function AddBookmarkModal() {
     const { isOpen, closeModal } = useBookmarkModal();
@@ -25,6 +32,31 @@ export default function AddBookmarkModal() {
 
     const { isLoggedIn } = useSession();
 
+    const { mutate, isPending: submissionPending } = useMutation({
+        mutationFn: async (bookmarkData: BookmarkResourceBody) => {
+            const response = await fetch("/api/bookmarks", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(bookmarkData),
+            });
+            if (!response.ok) {
+                throw new Error("Failed to add bookmark");
+            }
+            const bookmark = await response.json();
+            return bookmark;
+        },
+        onSuccess: () => {
+            console.log("Bookmark successfully added");
+            queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
+            queryClient.invalidateQueries({ queryKey: ["tags"] });
+            queryClient.invalidateQueries({ queryKey: ["collections"] });
+            closeModal();
+        },
+    });
+
     useEffect(() => {
         if (isOpen) {
             setBookmarkTitle("");
@@ -37,13 +69,14 @@ export default function AddBookmarkModal() {
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        console.log({
+        const bookmarkData = {
             title: bookmarkTitle,
             url: bookmarkUrl,
             description: bookmarkDescription,
             tags: chosenTags,
             collections: chosenCollections,
-        });
+        };
+        mutate(bookmarkData);
     }
 
     if (!isLoggedIn) {
@@ -99,8 +132,17 @@ export default function AddBookmarkModal() {
                 <Button color="secondary" onClick={closeModal}>
                     Cancel
                 </Button>
-                <Button color="primary" type="submit" form="add-bookmark-form">
-                    Add Bookmark
+                <Button
+                    disabled={submissionPending}
+                    color="primary"
+                    type="submit"
+                    form="add-bookmark-form"
+                >
+                    {submissionPending ? (
+                        <CircularProgress size={20} />
+                    ) : (
+                        "Add Bookmark"
+                    )}
                 </Button>
             </DialogActions>
         </Dialog>
