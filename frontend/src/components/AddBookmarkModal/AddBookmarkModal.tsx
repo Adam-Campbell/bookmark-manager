@@ -10,15 +10,14 @@ import {
 } from "@mui/material";
 import { useBookmarkModal } from "../../BookmarkModalContext";
 import {
-    type TagRepresentation,
     type CollectionRepresentation,
     type BookmarkResourceBody,
 } from "./types";
-import { TagsAutocomplete } from "./TagsAutocomplete";
 import { CollectionsAutocomplete } from "./CollectionsAutocomplete";
 import { useSession } from "../../SessionContext";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../http";
+import TagsAutocomplete, { type TagRepresentation } from "../TagsAutocomplete";
 
 export default function AddBookmarkModal() {
     const { isOpen, closeModal } = useBookmarkModal();

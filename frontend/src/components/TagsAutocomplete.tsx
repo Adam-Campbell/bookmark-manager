@@ -1,15 +1,21 @@
 import { Autocomplete, TextField, CircularProgress } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import {
-    type Tag,
-    type TagRepresentation,
-    type TagsAutocompleteProps,
-} from "./types";
+import { type Tag } from "../types";
 
-export const TagsAutocomplete = ({
+export type TagRepresentation = {
+    id: number | null;
+    name: string;
+};
+
+export type TagsAutocompleteProps = {
+    chosenTags: TagRepresentation[];
+    handleTagsChange: React.Dispatch<React.SetStateAction<TagRepresentation[]>>;
+};
+
+export default function TagsAutocomplete({
     chosenTags,
     handleTagsChange,
-}: TagsAutocompleteProps) => {
+}: TagsAutocompleteProps) {
     const { data, isPending } = useQuery({
         queryKey: ["tags"],
         staleTime: 5 * 60 * 1000,
@@ -88,4 +94,4 @@ export const TagsAutocomplete = ({
             }}
         />
     );
-};
+}

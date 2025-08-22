@@ -6,14 +6,9 @@ export type Tag = {
     updatedAt: Date;
 };
 
-export type TagRepresentation = {
+type TagRepresentation = {
     id: number | null;
     name: string;
-};
-
-export type TagsAutocompleteProps = {
-    chosenTags: TagRepresentation[];
-    handleTagsChange: React.Dispatch<React.SetStateAction<TagRepresentation[]>>;
 };
 
 export type Collection = {
