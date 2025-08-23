@@ -7,12 +7,25 @@ import bookmarkRoutes from "./routes/bookmarkRoutes.ts";
 import collectionRoutes from "./routes/collectionRoutes.ts";
 import dotenv from "dotenv";
 import fastifyCors from "@fastify/cors";
+import { type ZodTypeProvider } from "fastify-type-provider-zod";
+import {
+    serializerCompiler,
+    validatorCompiler,
+} from "fastify-type-provider-zod";
 
 dotenv.config();
 
+// Fastify's types do not yet include routerOptions (despite this being the recommended way
+// to configure Fastify), so we use 'any' to bypass type checking.
 const fastify = Fastify({
     logger: true,
-});
+    routerOptions: {
+        ignoreTrailingSlash: true,
+    },
+} as any).withTypeProvider<ZodTypeProvider>();
+
+fastify.setValidatorCompiler(validatorCompiler);
+fastify.setSerializerCompiler(serializerCompiler);
 
 if (process.env.NODE_ENV === "development") {
     console.log("Development mode: Enabling CORS for all origins");

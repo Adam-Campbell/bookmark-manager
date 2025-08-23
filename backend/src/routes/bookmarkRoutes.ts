@@ -1,22 +1,16 @@
 import { FastifyPluginAsync, FastifyRequest } from "fastify";
 import { Prisma, Tag, PrismaClient } from "../../generated/prisma/index.js";
+import { type FastifyZod } from "../../types/index.ts";
+import {
+    BookmarkBodySchema,
+    BookmarkSchema,
+    BookmarkWithCollectionsSchema,
+} from "../schemas.ts";
+import { z } from "zod";
 
 type TagData = {
     id: number | null;
     name: string;
-};
-
-type CollectionData = {
-    id: number;
-    title: string;
-};
-
-type BookmarkResourceBody = {
-    title: string;
-    url: string;
-    description?: string;
-    tags?: TagData[];
-    collections?: CollectionData[];
 };
 
 /**
@@ -81,34 +75,56 @@ async function createAndFormatTags(
     return allTags;
 }
 
-const routes: FastifyPluginAsync = async (fastify, options) => {
+const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
     const { prisma } = fastify;
 
     // Get all bookmarks for user
-    fastify.get("/", async (request: FastifyRequest, reply) => {
-        const userId = request.user?.id;
-        if (!userId) {
-            return reply.status(401).send({ error: "Unauthorized" });
-        }
-        const bookmarks = await prisma.bookmark.findMany({
-            where: { userId },
-            include: {
-                tags: true,
-                collections: true,
-            },
-        });
-        reply.send(bookmarks);
-    });
-
-    // Get users bookmark by id
     fastify.get(
-        "/:id",
-        async (request: FastifyRequest<{ Params: { id: string } }>, reply) => {
+        "/",
+        {
+            schema: {
+                response: {
+                    200: z.array(BookmarkSchema),
+                    401: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request: FastifyRequest, reply) => {
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
-            const id = Number(request.params.id);
+            const bookmarks = await prisma.bookmark.findMany({
+                where: { userId },
+                include: {
+                    tags: true,
+                },
+            });
+            reply.send(bookmarks);
+        }
+    );
+
+    // Get users bookmark by id
+    fastify.get(
+        "/:id",
+        {
+            schema: {
+                params: z.object({
+                    id: z.coerce.number().int(),
+                }),
+                response: {
+                    200: BookmarkWithCollectionsSchema,
+                    401: z.object({ error: z.string() }),
+                    404: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const userId = request.user?.id;
+            if (!userId) {
+                return reply.status(401).send({ error: "Unauthorized" });
+            }
+            const { id } = request.params;
             const bookmark = await prisma.bookmark.findUnique({
                 where: { id, userId },
                 include: {
@@ -126,10 +142,16 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
     // Create a new bookmark
     fastify.post(
         "/",
-        async (
-            request: FastifyRequest<{ Body: BookmarkResourceBody }>,
-            reply
-        ) => {
+        {
+            schema: {
+                body: BookmarkBodySchema,
+                response: {
+                    200: BookmarkWithCollectionsSchema,
+                    401: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
@@ -161,18 +183,26 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
     // Update a bookmark
     fastify.patch(
         "/:id",
-        async (
-            request: FastifyRequest<{
-                Params: { id: string };
-                Body: BookmarkResourceBody;
-            }>,
-            reply
-        ) => {
+        {
+            schema: {
+                params: z.object({
+                    id: z.coerce.number().int(),
+                }),
+                body: BookmarkBodySchema,
+                response: {
+                    200: BookmarkWithCollectionsSchema,
+                    401: z.object({ error: z.string() }),
+                    404: z.object({ error: z.string() }),
+                    500: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
-            const id = Number(request.params.id);
+            const { id } = request.params;
             const { title, url, description } = request.body;
             let tags = request.body.tags || [];
             let collections = request.body.collections || [];
@@ -215,12 +245,25 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
     // Delete a bookmark
     fastify.delete(
         "/:id",
-        async (request: FastifyRequest<{ Params: { id: string } }>, reply) => {
+        {
+            schema: {
+                params: z.object({
+                    id: z.coerce.number().int(),
+                }),
+                response: {
+                    204: z.undefined(),
+                    401: z.object({ error: z.string() }),
+                    404: z.object({ error: z.string() }),
+                    500: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
-            const id = Number(request.params.id);
+            const { id } = request.params;
             try {
                 await prisma.bookmark.delete({
                     where: { id, userId },

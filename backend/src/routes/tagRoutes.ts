@@ -1,23 +1,48 @@
-import { FastifyPluginAsync, FastifyRequest } from "fastify";
+import { FastifyPluginAsync } from "fastify";
 import { Prisma } from "../../generated/prisma/index.js";
+import { type FastifyZod } from "../../types/index.ts";
+import { z } from "zod";
+import { TagSchema } from "../schemas.ts";
 
-const routes: FastifyPluginAsync = async (fastify, options) => {
+const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
     const { prisma } = fastify;
 
-    fastify.get("/", async (request: FastifyRequest, reply) => {
-        const userId = request.user?.id;
-        if (!userId) {
-            return reply.status(401).send({ error: "Unauthorized" });
+    fastify.get(
+        "/",
+        {
+            schema: {
+                response: {
+                    200: z.array(TagSchema),
+                    401: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const userId = request.user?.id;
+            if (!userId) {
+                return reply.status(401).send({ error: "Unauthorized" });
+            }
+            const tags = await prisma.tag.findMany({
+                where: { userId },
+            });
+            reply.send(tags);
         }
-        const tags = await prisma.tag.findMany({
-            where: { userId },
-        });
-        reply.send(tags);
-    });
+    );
 
     fastify.post(
         "/",
-        async (request: FastifyRequest<{ Body: { name: string } }>, reply) => {
+        {
+            schema: {
+                body: z.object({
+                    name: z.string().min(2).max(100),
+                }),
+                response: {
+                    200: TagSchema,
+                    401: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
@@ -32,18 +57,28 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
 
     fastify.patch(
         "/:id",
-        async (
-            request: FastifyRequest<{
-                Params: { id: string };
-                Body: { name: string };
-            }>,
-            reply
-        ) => {
+        {
+            schema: {
+                params: z.object({
+                    id: z.coerce.number().int(),
+                }),
+                body: z.object({
+                    name: z.string().min(2).max(100),
+                }),
+                response: {
+                    200: TagSchema,
+                    401: z.object({ error: z.string() }),
+                    404: z.object({ error: z.string() }),
+                    500: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
-            const id = Number(request.params.id);
+            const { id } = request.params;
             const { name } = request.body;
             try {
                 const tag = await prisma.tag.update({
@@ -67,12 +102,25 @@ const routes: FastifyPluginAsync = async (fastify, options) => {
 
     fastify.delete(
         "/:id",
-        async (request: FastifyRequest<{ Params: { id: string } }>, reply) => {
+        {
+            schema: {
+                params: z.object({
+                    id: z.coerce.number().int(),
+                }),
+                response: {
+                    204: z.undefined(),
+                    401: z.object({ error: z.string() }),
+                    404: z.object({ error: z.string() }),
+                    500: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
-            const id = Number(request.params.id);
+            const { id } = request.params;
             try {
                 await prisma.tag.deleteMany({
                     where: { id, userId },
