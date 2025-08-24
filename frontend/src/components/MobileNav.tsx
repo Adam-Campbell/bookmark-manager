@@ -14,6 +14,7 @@ import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 import AddIcon from "@mui/icons-material/Add";
 import { Link as NavLink } from "react-router";
 import { useBookmarkModal } from "../BookmarkModalContext";
+import { useSession } from "../SessionContext";
 
 // There isn't currently much use for this component since I'm not doing anything conditionally
 // based on whether it matches the route, but I'm leaving it in place in case I want to
@@ -43,6 +44,7 @@ function MobileNavLink({
 
 export default function MobileNav() {
     const isTabletUp = useMediaQuery("(min-width:768px)");
+    const { isLoggedIn } = useSession();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const { openModal } = useBookmarkModal();
 
@@ -61,8 +63,8 @@ export default function MobileNav() {
 
     const isOpen = Boolean(anchorEl);
 
-    if (isTabletUp) {
-        return null; // Don't render on tablet or larger screens
+    if (isTabletUp || !isLoggedIn) {
+        return null; // Don't render on tablet or larger screens, or if not logged in
     }
     return (
         <Box position="fixed" sx={{ bottom: 10, left: 0, right: 0 }}>

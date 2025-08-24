@@ -4,7 +4,7 @@ import { useSession } from "../../SessionContext";
 
 export function UserMenu() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const { signOut } = useSession();
+    const { signOut, user } = useSession();
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -21,6 +21,13 @@ export function UserMenu() {
 
     const isOpen = Boolean(anchorEl);
 
+    const userInitials = user
+        ? user.name
+              .split(" ")
+              .map((name) => name[0])
+              .join("")
+        : "";
+
     return (
         <>
             <IconButton
@@ -35,7 +42,7 @@ export function UserMenu() {
                         color: "text.primary",
                     }}
                 >
-                    AC
+                    {userInitials}
                 </Avatar>
             </IconButton>
             <Menu

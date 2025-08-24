@@ -7,11 +7,11 @@ import {
     Button,
     Link,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router";
+import { Link as RouterLink, Navigate } from "react-router";
 import { useSession } from "../SessionContext";
 
 export default function SignUpPage() {
-    const { signUp } = useSession();
+    const { signUp, isLoggedIn } = useSession();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -25,6 +25,10 @@ export default function SignUpPage() {
         }
         await signUp(email, password, username);
     };
+
+    if (isLoggedIn) {
+        return <Navigate to="/bookmarks" />;
+    }
 
     return (
         <Container maxWidth="sm" sx={{ mt: 6 }}>
