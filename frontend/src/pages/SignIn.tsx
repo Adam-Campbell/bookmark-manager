@@ -1,3 +1,13 @@
+import {
+    Container,
+    Paper,
+    TextField,
+    Button,
+    Typography,
+    Link,
+    Stack,
+} from "@mui/material";
+import { Link as RouterLink } from "react-router";
 import { useSession } from "../SessionContext";
 
 export default function SignInPage() {
@@ -16,16 +26,50 @@ export default function SignInPage() {
     };
 
     return (
-        <form method="post" onSubmit={handleSubmit}>
-            <label htmlFor="email">
-                Email
-                <input type="email" required id="email" name="email" />
-            </label>
-            <label htmlFor="password">
-                Password
-                <input type="password" required id="password" name="password" />
-            </label>
-            <button type="submit">Sign In</button>
-        </form>
+        <Container maxWidth="sm" sx={{ mt: 6 }}>
+            <Paper elevation={3} sx={{ p: 4 }}>
+                <Stack component="form" method="post" onSubmit={handleSubmit}>
+                    <Typography variant="h5" component="h1" gutterBottom>
+                        Sign In
+                    </Typography>
+                    <TextField
+                        autoFocus
+                        required
+                        margin="dense"
+                        label="Email"
+                        type="email"
+                        fullWidth
+                        variant="filled"
+                        name="email"
+                    />
+                    <TextField
+                        required
+                        margin="dense"
+                        label="Password"
+                        type="password"
+                        fullWidth
+                        variant="filled"
+                        name="password"
+                    />
+                    <Typography variant="body2" sx={{ mt: 2 }}>
+                        Don't have an account?{" "}
+                        <Link
+                            component={RouterLink}
+                            to="/sign-up"
+                            underline="hover"
+                        >
+                            Sign Up
+                        </Link>
+                    </Typography>
+                    <Button
+                        sx={{ marginLeft: "auto" }}
+                        variant="contained"
+                        type="submit"
+                    >
+                        Sign In
+                    </Button>
+                </Stack>
+            </Paper>
+        </Container>
     );
 }

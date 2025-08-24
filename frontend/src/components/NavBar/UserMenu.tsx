@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { IconButton, Avatar, Menu, MenuItem } from "@mui/material";
+import { useSession } from "../../SessionContext";
 
 export function UserMenu() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const { signOut } = useSession();
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -10,6 +12,11 @@ export function UserMenu() {
 
     const handleClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleSignOut = async () => {
+        await signOut();
+        handleClose();
     };
 
     const isOpen = Boolean(anchorEl);
@@ -40,7 +47,7 @@ export function UserMenu() {
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
             >
                 <MenuItem onClick={handleClose}>View Profile</MenuItem>
-                <MenuItem onClick={handleClose}>Logout</MenuItem>
+                <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
             </Menu>
         </>
     );
