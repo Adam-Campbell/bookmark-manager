@@ -20,6 +20,11 @@ export function CreationMenu() {
         handleClose();
     };
 
+    const handleCreateCollectionClick = () => {
+        openModal("addCollection");
+        handleClose();
+    };
+
     const isOpen = Boolean(anchorEl);
 
     return (
@@ -53,7 +58,9 @@ export function CreationMenu() {
                 <MenuItem onClick={handleCreateBookmarkClick}>
                     New Bookmark
                 </MenuItem>
-                <MenuItem onClick={handleClose}>New Collection</MenuItem>
+                <MenuItem onClick={handleCreateCollectionClick}>
+                    New Collection
+                </MenuItem>
             </Menu>
         </>
     );

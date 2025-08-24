@@ -4,6 +4,7 @@ import { SessionProvider } from "../SessionContext";
 import NavBar from "../components/NavBar";
 import MobileNav from "../components/MobileNav";
 import AddBookmarkModal from "../components/AddBookmarkModal";
+import AddCollectionModal from "../components/AddCollectionModal";
 
 export default function RootLayout() {
     const sessionData = useLoaderData();
@@ -17,6 +18,7 @@ export default function RootLayout() {
                 </main>
                 <MobileNav />
                 <AddBookmarkModal />
+                <AddCollectionModal />
             </SessionProvider>
         </>
     );

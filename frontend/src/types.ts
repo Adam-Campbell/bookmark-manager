@@ -43,11 +43,3 @@ export type CollectionRepresentation = {
     id: number;
     title: string;
 };
-
-export type BookmarkResourceBody = {
-    title: string;
-    url: string;
-    description?: string;
-    tags?: TagRepresentation[];
-    collections?: CollectionRepresentation[];
-};

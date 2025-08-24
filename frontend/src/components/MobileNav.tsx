@@ -61,6 +61,11 @@ export default function MobileNav() {
         handleMenuClose();
     };
 
+    const handleCreateCollectionClick = () => {
+        openModal("addCollection");
+        handleMenuClose();
+    };
+
     const isOpen = Boolean(anchorEl);
 
     if (isTabletUp || !isLoggedIn) {
@@ -113,7 +118,7 @@ export default function MobileNav() {
                         <MenuItem onClick={handleCreateBookmarkClick}>
                             New Bookmark
                         </MenuItem>
-                        <MenuItem onClick={handleMenuClose}>
+                        <MenuItem onClick={handleCreateCollectionClick}>
                             New Collection
                         </MenuItem>
                     </Menu>
