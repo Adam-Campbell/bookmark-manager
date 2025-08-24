@@ -8,7 +8,7 @@ import {
     TextField,
     CircularProgress,
 } from "@mui/material";
-import { useBookmarkModal } from "../../BookmarkModalContext";
+import { useModal } from "../../ModalContext";
 import {
     type CollectionRepresentation,
     type BookmarkResourceBody,
@@ -20,7 +20,7 @@ import { queryClient } from "../../http";
 import TagsAutocomplete, { type TagRepresentation } from "../TagsAutocomplete";
 
 export default function AddBookmarkModal() {
-    const { isOpen, closeModal } = useBookmarkModal();
+    const { activeModal, closeModal } = useModal();
     const [bookmarkTitle, setBookmarkTitle] = useState("");
     const [bookmarkUrl, setBookmarkUrl] = useState("");
     const [bookmarkDescription, setBookmarkDescription] = useState("");
@@ -57,14 +57,14 @@ export default function AddBookmarkModal() {
     });
 
     useEffect(() => {
-        if (isOpen) {
+        if (activeModal === "addBookmark") {
             setBookmarkTitle("");
             setBookmarkUrl("");
             setBookmarkDescription("");
             setChosenTags([]);
             setChosenCollections([]);
         }
-    }, [isOpen]);
+    }, [activeModal]);
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -83,7 +83,11 @@ export default function AddBookmarkModal() {
     }
 
     return (
-        <Dialog open={isOpen} onClose={closeModal} closeAfterTransition={false}>
+        <Dialog
+            open={activeModal === "addBookmark"}
+            onClose={closeModal}
+            closeAfterTransition={false}
+        >
             <DialogTitle>Add Bookmark</DialogTitle>
             <DialogContent>
                 <form id="add-bookmark-form" onSubmit={handleSubmit}>

@@ -13,7 +13,7 @@ import BookmarkIcon from "@mui/icons-material/Bookmark";
 import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 import AddIcon from "@mui/icons-material/Add";
 import { Link as NavLink } from "react-router";
-import { useBookmarkModal } from "../BookmarkModalContext";
+import { useModal } from "../ModalContext";
 import { useSession } from "../SessionContext";
 
 // There isn't currently much use for this component since I'm not doing anything conditionally
@@ -46,7 +46,7 @@ export default function MobileNav() {
     const isTabletUp = useMediaQuery("(min-width:768px)");
     const { isLoggedIn } = useSession();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const { openModal } = useBookmarkModal();
+    const { openModal } = useModal();
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -57,7 +57,7 @@ export default function MobileNav() {
     };
 
     const handleCreateBookmarkClick = () => {
-        openModal();
+        openModal("addBookmark");
         handleMenuClose();
     };
 

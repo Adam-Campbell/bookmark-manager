@@ -6,16 +6,16 @@ import { RouterProvider } from "react-router";
 import { router } from "./router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./http";
-import { BookmarkModalProvider } from "./BookmarkModalContext";
+import { ModalProvider } from "./ModalContext";
 
 function App() {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <QueryClientProvider client={queryClient}>
-                <BookmarkModalProvider>
+                <ModalProvider>
                     <RouterProvider router={router} />
-                </BookmarkModalProvider>
+                </ModalProvider>
             </QueryClientProvider>
         </ThemeProvider>
     );

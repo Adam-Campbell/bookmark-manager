@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Menu, MenuItem, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useBookmarkModal } from "../../BookmarkModalContext";
+import { useModal } from "../../ModalContext";
 
 export function CreationMenu() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const { openModal } = useBookmarkModal();
+    const { openModal } = useModal();
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -16,7 +16,7 @@ export function CreationMenu() {
     };
 
     const handleCreateBookmarkClick = () => {
-        openModal();
+        openModal("addBookmark");
         handleClose();
     };
 
