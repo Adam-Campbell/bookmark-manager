@@ -1,11 +1,6 @@
 import { Autocomplete, TextField, CircularProgress } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { type Tag } from "../types";
-
-export type TagRepresentation = {
-    id: number | null;
-    name: string;
-};
+import { type Tag, type TagRepresentation } from "../types";
 
 export type TagsAutocompleteProps = {
     chosenTags: TagRepresentation[];

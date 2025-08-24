@@ -9,15 +9,16 @@ import {
     CircularProgress,
 } from "@mui/material";
 import { useModal } from "../../ModalContext";
-import {
-    type CollectionRepresentation,
-    type BookmarkResourceBody,
-} from "./types";
 import { CollectionsAutocomplete } from "./CollectionsAutocomplete";
 import { useSession } from "../../SessionContext";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../http";
-import TagsAutocomplete, { type TagRepresentation } from "../TagsAutocomplete";
+import TagsAutocomplete from "../TagsAutocomplete";
+import {
+    type TagRepresentation,
+    type CollectionRepresentation,
+    type BookmarkResourceBody,
+} from "../../types";
 
 export default function AddBookmarkModal() {
     const { activeModal, closeModal } = useModal();

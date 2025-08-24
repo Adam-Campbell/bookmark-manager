@@ -1,6 +1,13 @@
 import { Autocomplete, TextField, CircularProgress } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { type Collection, type CollectionsAutocompleteProps } from "./types";
+import { type Collection, type CollectionRepresentation } from "../../types";
+
+export type CollectionsAutocompleteProps = {
+    chosenCollections: CollectionRepresentation[];
+    handleCollectionsChange: React.Dispatch<
+        React.SetStateAction<CollectionRepresentation[]>
+    >;
+};
 
 export const CollectionsAutocomplete = ({
     chosenCollections,
