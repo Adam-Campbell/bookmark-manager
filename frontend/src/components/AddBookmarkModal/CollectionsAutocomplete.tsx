@@ -9,12 +9,22 @@ export type CollectionsAutocompleteProps = {
     >;
 };
 
+function transformCollectionsToRepresentations(
+    collections: Collection[]
+): CollectionRepresentation[] {
+    return collections.map((col) => ({
+        id: col.id,
+        title: col.title,
+    }));
+}
+
 export const CollectionsAutocomplete = ({
     chosenCollections,
     handleCollectionsChange,
 }: CollectionsAutocompleteProps) => {
     const { data, isPending } = useQuery({
         staleTime: 0 * 60 * 1000,
+        select: transformCollectionsToRepresentations,
         queryKey: ["collections"],
         queryFn: async () => {
             const response = await fetch("/api/collections", {
@@ -24,7 +34,7 @@ export const CollectionsAutocomplete = ({
                 throw new Error("Failed to fetch collections");
             }
             const collections: Collection[] = await response.json();
-            return collections.map((col) => ({ id: col.id, title: col.title }));
+            return collections;
         },
     });
 
