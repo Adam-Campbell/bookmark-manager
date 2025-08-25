@@ -17,9 +17,13 @@ export default function NavBar() {
 
     const AuthenticatedLinks = () => (
         <>
-            <NavLink to="/bookmarks">Bookmarks</NavLink>
-            <NavLink to="/collections">Collections</NavLink>
-            <CreationMenu />
+            {isTabletUp && (
+                <>
+                    <NavLink to="/bookmarks">Bookmarks</NavLink>
+                    <NavLink to="/collections">Collections</NavLink>
+                    <CreationMenu />
+                </>
+            )}
             <UserMenu />
         </>
     );
@@ -43,9 +47,7 @@ export default function NavBar() {
                             Bookmarkly
                         </Typography>
                         {isLoggedIn ? (
-                            isTabletUp ? (
-                                <AuthenticatedLinks />
-                            ) : null
+                            <AuthenticatedLinks />
                         ) : (
                             <UnauthenticatedLinks />
                         )}
