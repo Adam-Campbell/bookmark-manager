@@ -4,9 +4,8 @@ import { Box, Container, Paper, List } from "@mui/material";
 import { BookmarkSearchBar } from "../components/BookmarkSearchBar";
 import BookmarkListItem from "../components/BookmarkListItem";
 import { type Bookmark } from "../types";
-import TagsAutocomplete, {
-    type TagRepresentation,
-} from "../components/TagsAutocomplete";
+import TagsAutocomplete from "../components/TagsAutocomplete";
+import { type TagRepresentation } from "../types";
 
 export default function BookmarksPage() {
     const [chosenTags, setChosenTags] = useState<TagRepresentation[]>([]);
@@ -46,6 +45,7 @@ export default function BookmarksPage() {
                                 key={bookmark.id}
                                 bookmark={bookmark}
                                 includeBorder={index !== 0}
+                                showFullDetail={true}
                             />
                         ))}
                     </List>
