@@ -99,7 +99,7 @@ const paletteOptions: PaletteOptions = {
     },
     text: {
         primary: "#1c1b19",
-        secondary: "rgba(28,27,25,0.8)",
+        secondary: "rgba(28,27,25,0.7)",
         disabled: "rgba(28,27,25,0.5)",
     },
 };

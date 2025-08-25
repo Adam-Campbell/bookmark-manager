@@ -26,6 +26,10 @@ export type Collection = {
     updatedAt: string; // ISO date string
 };
 
+export type CollectionWithBookmarkCount = Collection & {
+    bookmarkCount: number;
+};
+
 export type BookmarkWithCollections = Bookmark & {
     collections: Collection[];
 };
