@@ -52,6 +52,10 @@ export const CollectionSchema = z.object({
     updatedAt: z.date(),
 });
 
+export const CollectionWithBookmarkCountSchema = CollectionSchema.extend({
+    bookmarkCount: z.number(),
+});
+
 export const BookmarkWithCollectionsSchema = BookmarkSchema.extend({
     collections: z.array(CollectionSchema),
 });

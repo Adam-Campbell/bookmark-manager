@@ -1,8 +1,11 @@
 import { FastifyPluginAsync } from "fastify";
-import { Prisma, Bookmark } from "../../generated/prisma/index.js";
+import { Prisma, Bookmark, Collection } from "../../generated/prisma/index.js";
 import { type FastifyZod } from "../../types/index.ts";
 import { z } from "zod";
-import { CollectionSchema, CollectionWithBookmarksSchema } from "../schemas.ts";
+import {
+    CollectionWithBookmarkCountSchema,
+    CollectionWithBookmarksSchema,
+} from "../schemas.ts";
 
 const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
     const { prisma } = fastify;
@@ -13,7 +16,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         {
             schema: {
                 response: {
-                    200: z.array(CollectionSchema),
+                    200: z.array(CollectionWithBookmarkCountSchema),
                     401: z.object({ error: z.string() }),
                 },
             },
@@ -23,10 +26,39 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
-            const collections = await prisma.collection.findMany({
-                where: { userId },
-            });
-            reply.send(collections);
+            type CollectionWithCount = Prisma.CollectionGetPayload<{
+                include: {
+                    _count: {
+                        select: {
+                            bookmarks: true;
+                        };
+                    };
+                };
+            }>;
+            const collections: CollectionWithCount[] =
+                await prisma.collection.findMany({
+                    where: { userId },
+                    include: {
+                        _count: {
+                            select: {
+                                bookmarks: true,
+                            },
+                        },
+                    },
+                });
+            type CollectionWithBookmarkCount = Collection & {
+                bookmarkCount: number;
+            };
+            const formattedCollections: CollectionWithBookmarkCount[] =
+                collections.map(({ _count, ...rest }) => {
+                    const formatted = {
+                        ...rest,
+                        bookmarkCount: _count.bookmarks,
+                    };
+                    return formatted;
+                });
+
+            reply.send(formattedCollections);
         }
     );
 
