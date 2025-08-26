@@ -3,7 +3,7 @@ import RootLayout, { rootLoader } from "./pages/Root";
 import SignUpPage from "./pages/SignUp";
 import SignInPage from "./pages/SignIn";
 import AboutPage from "./pages/About";
-import BookmarksPage from "./pages/Bookmarks";
+import BookmarksPage, { bookmarksLoader } from "./pages/Bookmarks";
 import CollectionsPage, { collectionsLoader } from "./pages/Collections";
 import CollectionPage from "./pages/Collection";
 import { authClient } from "./authClient";
@@ -42,6 +42,7 @@ export const router = createBrowserRouter([
             {
                 path: "bookmarks",
                 Component: BookmarksPage,
+                loader: bookmarksLoader,
             },
             {
                 path: "collections",

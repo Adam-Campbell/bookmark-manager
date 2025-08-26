@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
     Box,
@@ -17,15 +17,45 @@ import { type TagRepresentation } from "../types";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { queryClient } from "../http";
+import Fuse from "fuse.js";
+
+/**
+ * Filters bookmarks by the selected tags.
+ * @param bookmarks - The list of bookmarks to filter.
+ * @param chosenTags - The tags to filter by.
+ * @returns The filtered list of bookmarks - consisting of those bookmarks that contain every
+ * tag in chosenTags within their tags array.
+ */
+function filterBookmarksByTags(
+    bookmarks: Bookmark[],
+    chosenTags: TagRepresentation[]
+) {
+    if (chosenTags.length === 0) return bookmarks;
+    return bookmarks.filter((bookmark) =>
+        // Return true if every tag in chosenTags is included in the bookmark's tags, else
+        // return false.
+        // The tags in chosenTags are of type TagRepresentation, while the tags in bookmarks
+        // are of type Tag, but we can compare them via their ids.
+        chosenTags.every((tagRepresentation) =>
+            bookmark.tags.some(
+                (tagObject) => tagRepresentation.id === tagObject.id
+            )
+        )
+    );
+}
 
 export default function BookmarksPage() {
     const [chosenTags, setChosenTags] = useState<TagRepresentation[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+
     const [showFullDetail, setShowFullDetail] = useState(true);
     const [menuIsExpanded, setMenuIsExpanded] = useState(true);
 
     const { data, error, isPending, isError } = useQuery({
         queryKey: ["bookmarks"],
-        queryFn: async () => {
+        placeholderData: [],
+        staleTime: 10000, // 10 seconds
+        queryFn: async (): Promise<Bookmark[]> => {
             const response = await fetch("/api/bookmarks", {
                 credentials: "include",
             });
@@ -37,9 +67,22 @@ export default function BookmarksPage() {
         },
     });
 
-    console.log(data);
+    const fuseInstance = useMemo(() => {
+        const allBookmarks = data ?? [];
+        let filteredBookmarks = filterBookmarksByTags(allBookmarks, chosenTags);
+        return new Fuse(filteredBookmarks, {
+            keys: ["title", "description", "url"],
+            includeScore: true,
+        });
+    }, [data, chosenTags]);
 
-    const bookmarks = data || [];
+    const bookmarksToDisplay = useMemo(() => {
+        if (searchQuery.trim() === "") {
+            return data ?? [];
+        }
+        const searchResults = fuseInstance.search(searchQuery);
+        return searchResults.map((result) => result.item);
+    }, [data, fuseInstance, searchQuery]);
 
     return (
         <Box sx={{ py: 4 }}>
@@ -85,7 +128,10 @@ export default function BookmarksPage() {
                             label="Show full bookmark detail"
                         />
 
-                        <BookmarkSearchBar />
+                        <BookmarkSearchBar
+                            searchQuery={searchQuery}
+                            handleSearchQueryChange={setSearchQuery}
+                        />
                         <TagsAutocomplete
                             chosenTags={chosenTags}
                             handleTagsChange={setChosenTags}
@@ -94,7 +140,7 @@ export default function BookmarksPage() {
                 </Paper>
                 <Paper variant="outlined">
                     <List>
-                        {bookmarks.map((bookmark, index) => (
+                        {bookmarksToDisplay.map((bookmark, index) => (
                             <BookmarkListItem
                                 key={bookmark.id}
                                 bookmark={bookmark}
