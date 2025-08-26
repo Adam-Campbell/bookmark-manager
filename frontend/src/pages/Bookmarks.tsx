@@ -67,22 +67,25 @@ export default function BookmarksPage() {
         },
     });
 
-    const fuseInstance = useMemo(() => {
+    const bookmarksToDisplay = useMemo(() => {
+        const start = performance.now();
         const allBookmarks = data ?? [];
         let filteredBookmarks = filterBookmarksByTags(allBookmarks, chosenTags);
-        return new Fuse(filteredBookmarks, {
+        if (searchQuery.trim() === "") {
+            const end = performance.now();
+            //console.log(`bookmarksToDisplay was created in ${end - start} ms`);
+            return filteredBookmarks;
+        }
+        const fuse = new Fuse(filteredBookmarks, {
             keys: ["title", "description", "url"],
             includeScore: true,
         });
-    }, [data, chosenTags]);
-
-    const bookmarksToDisplay = useMemo(() => {
-        if (searchQuery.trim() === "") {
-            return data ?? [];
-        }
-        const searchResults = fuseInstance.search(searchQuery);
-        return searchResults.map((result) => result.item);
-    }, [data, fuseInstance, searchQuery]);
+        const searchResults = fuse.search(searchQuery);
+        const bookmarkResults = searchResults.map((result) => result.item);
+        const end = performance.now();
+        //console.log(`bookmarksToDisplay was created in ${end - start} ms`);
+        return bookmarkResults;
+    }, [data, chosenTags, searchQuery]);
 
     return (
         <Box sx={{ py: 4 }}>

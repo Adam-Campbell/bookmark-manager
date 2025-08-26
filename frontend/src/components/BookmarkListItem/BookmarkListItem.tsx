@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Box, ListItem, Typography, Link } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { type Bookmark } from "../../types";
@@ -10,7 +11,7 @@ type BookmarkListItemProps = {
     showFullDetail?: boolean;
 };
 
-export default function BookmarkListItem({
+const BookmarkListItem = memo(function BookmarkListItem({
     bookmark,
     includeBorder,
     showFullDetail = false,
@@ -90,4 +91,6 @@ export default function BookmarkListItem({
             )}
         </ListItem>
     );
-}
+});
+
+export default BookmarkListItem;
