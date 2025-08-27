@@ -47,3 +47,12 @@ export type CollectionRepresentation = {
     id: number;
     title: string;
 };
+
+// Request body for creating or updating a bookmark
+export type BookmarkResourceBody = {
+    title: string;
+    url: string;
+    description?: string;
+    tags?: TagRepresentation[];
+    collections?: CollectionRepresentation[];
+};

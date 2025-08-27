@@ -5,9 +5,11 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 export function BookmarkOptionsMenu({
     bookmarkId,
     beginDeletion,
+    beginEditing,
 }: {
     bookmarkId: number;
     beginDeletion: (id: number) => void;
+    beginEditing: (id: number) => void;
 }) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -21,6 +23,11 @@ export function BookmarkOptionsMenu({
 
     const handleDeleteClick = () => {
         beginDeletion(bookmarkId);
+        handleMenuClose();
+    };
+
+    const handleEditClick = () => {
+        beginEditing(bookmarkId);
         handleMenuClose();
     };
 
@@ -48,7 +55,7 @@ export function BookmarkOptionsMenu({
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
             >
-                <MenuItem onClick={handleMenuClose}>Edit</MenuItem>
+                <MenuItem onClick={handleEditClick}>Edit</MenuItem>
                 <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
             </Menu>
         </>

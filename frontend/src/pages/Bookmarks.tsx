@@ -97,6 +97,7 @@ export default function BookmarksPage() {
                     <TagsAutocomplete
                         chosenTags={chosenTags}
                         handleTagsChange={setChosenTags}
+                        label="Filter by Tags"
                     />
                 </StickyPanel>
                 <BookmarkList

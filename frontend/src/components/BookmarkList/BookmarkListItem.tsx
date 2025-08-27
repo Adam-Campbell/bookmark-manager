@@ -5,6 +5,7 @@ import { type Bookmark } from "../../types";
 import { BookmarkOptionsMenu } from "./BookmarkOptionsMenu";
 import { BookmarkTags } from "./BookmarkTags";
 import { BookmarkDeletionModal } from "./BookmarkDeletionModal";
+import { BookmarkEditModal } from "./BookmarkEditModal";
 
 type BookmarkListItemProps = {
     bookmark: Bookmark;
@@ -19,6 +20,7 @@ export const BookmarkListItem = memo(function BookmarkListItem({
 }: BookmarkListItemProps) {
     const { title, url, description, tags } = bookmark;
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     return (
         <>
@@ -56,6 +58,7 @@ export const BookmarkListItem = memo(function BookmarkListItem({
                     <BookmarkOptionsMenu
                         bookmarkId={bookmark.id}
                         beginDeletion={() => setIsDeleting(true)}
+                        beginEditing={() => setIsEditing(true)}
                     />
                 </Box>
 
@@ -100,6 +103,11 @@ export const BookmarkListItem = memo(function BookmarkListItem({
                 bookmarkId={bookmark.id}
                 isOpen={isDeleting}
                 onClose={() => setIsDeleting(false)}
+            />
+            <BookmarkEditModal
+                bookmark={bookmark}
+                isOpen={isEditing}
+                onClose={() => setIsEditing(false)}
             />
         </>
     );

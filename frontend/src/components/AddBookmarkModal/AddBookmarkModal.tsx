@@ -17,15 +17,8 @@ import TagsAutocomplete from "../TagsAutocomplete";
 import {
     type TagRepresentation,
     type CollectionRepresentation,
+    type BookmarkResourceBody,
 } from "../../types";
-
-type BookmarkResourceBody = {
-    title: string;
-    url: string;
-    description?: string;
-    tags?: TagRepresentation[];
-    collections?: CollectionRepresentation[];
-};
 
 export default function AddBookmarkModal() {
     const { activeModal, closeModal } = useModal();

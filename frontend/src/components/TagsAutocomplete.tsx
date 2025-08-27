@@ -5,11 +5,15 @@ import { type Tag, type TagRepresentation } from "../types";
 export type TagsAutocompleteProps = {
     chosenTags: TagRepresentation[];
     handleTagsChange: React.Dispatch<React.SetStateAction<TagRepresentation[]>>;
+    label?: string;
+    placeholder?: string;
 };
 
 export default function TagsAutocomplete({
     chosenTags,
     handleTagsChange,
+    label = "Add Tags",
+    placeholder = "Add Tags",
 }: TagsAutocompleteProps) {
     const { data, isPending } = useQuery({
         queryKey: ["tags"],
@@ -57,8 +61,8 @@ export default function TagsAutocomplete({
                 <TextField
                     {...params}
                     variant="filled"
-                    label="Add Tags"
-                    placeholder="Add Tags"
+                    label={label}
+                    placeholder={placeholder}
                     slotProps={{
                         input: {
                             ...params.InputProps,
