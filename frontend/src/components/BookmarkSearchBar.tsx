@@ -1,5 +1,4 @@
-import { Box, TextField, IconButton } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Box, TextField } from "@mui/material";
 
 export default function BookmarkSearchBar({
     searchQuery,
@@ -20,9 +19,6 @@ export default function BookmarkSearchBar({
                 type="text"
                 sx={{ flexGrow: 1, mr: 1 }}
             />
-            <IconButton color="primary" aria-label="Search bookmarks">
-                <SearchIcon />
-            </IconButton>
         </Box>
     );
 }
