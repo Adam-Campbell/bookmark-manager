@@ -1,7 +1,7 @@
 import { Box, TextField, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
-export function BookmarkSearchBar({
+export default function BookmarkSearchBar({
     searchQuery,
     handleSearchQueryChange,
 }: {
