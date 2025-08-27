@@ -113,7 +113,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     id: z.coerce.number().int(),
                 }),
                 response: {
-                    200: BookmarkWithCollectionsSchema,
+                    200: BookmarkSchema,
                     401: z.object({ error: z.string() }),
                     404: z.object({ error: z.string() }),
                 },
@@ -129,7 +129,6 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 where: { id, userId },
                 include: {
                     tags: true,
-                    collections: true,
                 },
             });
             if (!bookmark) {
@@ -190,7 +189,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 }),
                 body: BookmarkBodySchema,
                 response: {
-                    200: BookmarkWithCollectionsSchema,
+                    200: BookmarkSchema,
                     401: z.object({ error: z.string() }),
                     404: z.object({ error: z.string() }),
                     500: z.object({ error: z.string() }),
@@ -222,7 +221,6 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     },
                     include: {
                         tags: true,
-                        collections: true,
                     },
                 });
                 reply.send(bookmark);
