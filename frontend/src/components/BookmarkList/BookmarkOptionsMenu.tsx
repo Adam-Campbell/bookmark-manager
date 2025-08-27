@@ -2,7 +2,13 @@ import { useState } from "react";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-export function BookmarkOptionsMenu({ bookmarkId }: { bookmarkId: number }) {
+export function BookmarkOptionsMenu({
+    bookmarkId,
+    beginDeletion,
+}: {
+    bookmarkId: number;
+    beginDeletion: (id: number) => void;
+}) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     const handleMenuAnchorClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -11,6 +17,11 @@ export function BookmarkOptionsMenu({ bookmarkId }: { bookmarkId: number }) {
 
     const handleMenuClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleDeleteClick = () => {
+        beginDeletion(bookmarkId);
+        handleMenuClose();
     };
 
     const optionsMenuIsOpen = Boolean(anchorEl);
@@ -38,7 +49,7 @@ export function BookmarkOptionsMenu({ bookmarkId }: { bookmarkId: number }) {
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
             >
                 <MenuItem onClick={handleMenuClose}>Edit</MenuItem>
-                <MenuItem onClick={handleMenuClose}>Delete</MenuItem>
+                <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
             </Menu>
         </>
     );
