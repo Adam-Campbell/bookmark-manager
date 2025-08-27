@@ -9,17 +9,17 @@ import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../http";
 import { type Bookmark } from "../../types";
 
-type BookmarkDeletionDialogProps = {
+type BookmarkDeletionModalProps = {
     isOpen: boolean;
     onClose: () => void;
     bookmarkId: number;
 };
 
-export function BookmarkDeletionDialog({
+export function BookmarkDeletionModal({
     isOpen,
     onClose,
     bookmarkId,
-}: BookmarkDeletionDialogProps) {
+}: BookmarkDeletionModalProps) {
     const { mutate } = useMutation({
         mutationFn: async (bookmarkId: number) => {
             const response = await fetch(`/api/bookmarks/${bookmarkId}`, {

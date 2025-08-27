@@ -4,7 +4,7 @@ import LaunchIcon from "@mui/icons-material/Launch";
 import { type Bookmark } from "../../types";
 import { BookmarkOptionsMenu } from "./BookmarkOptionsMenu";
 import { BookmarkTags } from "./BookmarkTags";
-import { BookmarkDeletionDialog } from "./BookmarkDeletionDialog";
+import { BookmarkDeletionModal } from "./BookmarkDeletionModal";
 
 type BookmarkListItemProps = {
     bookmark: Bookmark;
@@ -96,7 +96,7 @@ export const BookmarkListItem = memo(function BookmarkListItem({
                     </>
                 )}
             </ListItem>
-            <BookmarkDeletionDialog
+            <BookmarkDeletionModal
                 bookmarkId={bookmark.id}
                 isOpen={isDeleting}
                 onClose={() => setIsDeleting(false)}
