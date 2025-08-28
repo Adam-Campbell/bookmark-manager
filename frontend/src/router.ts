@@ -5,7 +5,7 @@ import SignInPage from "./pages/SignIn";
 import AboutPage from "./pages/About";
 import BookmarksPage, { bookmarksLoader } from "./pages/Bookmarks";
 import CollectionsPage, { collectionsLoader } from "./pages/Collections";
-import CollectionPage from "./pages/Collection";
+import CollectionPage, { collectionLoader } from "./pages/Collection";
 import { authClient } from "./authClient";
 
 export const router = createBrowserRouter([
@@ -52,6 +52,7 @@ export const router = createBrowserRouter([
             {
                 path: "collections/:id",
                 Component: CollectionPage,
+                loader: collectionLoader,
             },
         ],
     },

@@ -56,3 +56,8 @@ export type BookmarkResourceBody = {
     tags?: TagRepresentation[];
     collections?: CollectionRepresentation[];
 };
+
+export type CollectionResourceBody = {
+    title: string;
+    description?: string;
+};
