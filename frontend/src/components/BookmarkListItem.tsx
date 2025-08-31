@@ -1,26 +1,21 @@
-import { memo, useState } from "react";
-import { Box, ListItem, Typography, Link } from "@mui/material";
+import { Box, ListItem, Typography, Link, Chip } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
-import { type Bookmark } from "../../types";
-import { BookmarkOptionsMenu } from "./BookmarkOptionsMenu";
-import { BookmarkTags } from "./BookmarkTags";
-import { BookmarkDeletionModal } from "./BookmarkDeletionModal";
-import { BookmarkEditModal } from "./BookmarkEditModal";
+import { type Bookmark } from "../types";
 
 type BookmarkListItemProps = {
     bookmark: Bookmark;
     includeBorder?: boolean;
     showFullDetail?: boolean;
+    controls?: React.ReactNode;
 };
 
-export const BookmarkListItem = memo(function BookmarkListItem({
+export default function BookmarkListItem({
     bookmark,
     includeBorder,
     showFullDetail = false,
+    controls,
 }: BookmarkListItemProps) {
     const { title, url, description, tags } = bookmark;
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
 
     return (
         <>
@@ -55,11 +50,7 @@ export const BookmarkListItem = memo(function BookmarkListItem({
                         {title}
                     </Typography>
 
-                    <BookmarkOptionsMenu
-                        bookmarkId={bookmark.id}
-                        beginDeletion={() => setIsDeleting(true)}
-                        beginEditing={() => setIsEditing(true)}
-                    />
+                    {controls && <Box>{controls}</Box>}
                 </Box>
 
                 <Link
@@ -95,20 +86,22 @@ export const BookmarkListItem = memo(function BookmarkListItem({
                         >
                             {description}
                         </Typography>
-                        <BookmarkTags tags={tags} />
+                        {tags && (
+                            <Box sx={{ ml: -1 }}>
+                                {tags.map((tag) => (
+                                    <Chip
+                                        key={tag.id}
+                                        label={`#${tag.name}`}
+                                        color="primary"
+                                        size="small"
+                                        sx={{ ml: 1 }}
+                                    />
+                                ))}
+                            </Box>
+                        )}
                     </>
                 )}
             </ListItem>
-            <BookmarkDeletionModal
-                bookmarkId={bookmark.id}
-                isOpen={isDeleting}
-                onClose={() => setIsDeleting(false)}
-            />
-            <BookmarkEditModal
-                bookmark={bookmark}
-                isOpen={isEditing}
-                onClose={() => setIsEditing(false)}
-            />
         </>
     );
-});
+}

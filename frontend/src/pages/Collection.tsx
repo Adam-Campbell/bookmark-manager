@@ -1,9 +1,43 @@
 import { useParams, type LoaderFunctionArgs } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Container } from "@mui/material";
-import { type CollectionWithBookmarks } from "../types";
+import {
+    Container,
+    ListItem,
+    Box,
+    Typography,
+    Link,
+    List,
+    Paper,
+    IconButton,
+} from "@mui/material";
+import { type CollectionWithBookmarks, type Bookmark } from "../types";
 import { queryClient } from "../http";
 import CollectionHeader from "../components/CollectionHeader";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import BookmarkListItem from "../components/BookmarkListItem";
+
+type RemovableBookmarkListItemProps = {
+    bookmark: Bookmark;
+    includeBorder?: boolean;
+};
+
+function RemovableBookmarkListItem({
+    bookmark,
+    includeBorder,
+}: RemovableBookmarkListItemProps) {
+    return (
+        <BookmarkListItem
+            bookmark={bookmark}
+            includeBorder={includeBorder}
+            showFullDetail={true}
+            controls={
+                <IconButton>
+                    <RemoveCircleIcon />
+                </IconButton>
+            }
+        />
+    );
+}
 
 export default function CollectionPage() {
     const params = useParams();
@@ -41,6 +75,17 @@ export default function CollectionPage() {
                 id={data.id}
                 bookmarkCount={data.bookmarks.length}
             />
+            <Paper variant="outlined" sx={{ mt: 3 }}>
+                <List>
+                    {data.bookmarks.map((bookmark, index) => (
+                        <RemovableBookmarkListItem
+                            key={bookmark.id}
+                            bookmark={bookmark}
+                            includeBorder={index !== 0}
+                        />
+                    ))}
+                </List>
+            </Paper>
         </Container>
     );
 }

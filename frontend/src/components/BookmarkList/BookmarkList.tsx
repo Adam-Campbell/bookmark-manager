@@ -1,5 +1,5 @@
 import { Paper, List, Typography, Button } from "@mui/material";
-import { BookmarkListItem } from "./BookmarkListItem";
+import { EditableBookmarkListItem } from "./EditableBookmarkListItem";
 import { type Bookmark } from "../../types";
 import AddIcon from "@mui/icons-material/Add";
 import { useModal } from "../../ModalContext";
@@ -60,7 +60,7 @@ export default function BookmarkList({
         <Paper variant="outlined">
             <List>
                 {bookmarksToDisplay.map((bookmark, index) => (
-                    <BookmarkListItem
+                    <EditableBookmarkListItem
                         key={bookmark.id}
                         bookmark={bookmark}
                         showFullDetail={showFullDetail}
