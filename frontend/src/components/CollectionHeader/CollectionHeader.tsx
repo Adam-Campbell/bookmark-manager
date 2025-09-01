@@ -47,7 +47,11 @@ export default function CollectionHeader({
                     variant="contained"
                     color="secondary"
                     endIcon={<DeleteIcon />}
-                    sx={{ mt: { xs: 1, sm: 0 }, ml: { xs: 0, sm: "auto" } }}
+                    sx={{
+                        mt: { xs: 1, sm: 0 },
+                        ml: { xs: 0, sm: "auto" },
+                        width: { xs: "100%", sm: "initial" },
+                    }}
                     onClick={() => setIsDeleteModalOpen(true)}
                 >
                     Delete
@@ -56,7 +60,11 @@ export default function CollectionHeader({
                     variant="contained"
                     color="primary"
                     endIcon={<EditIcon />}
-                    sx={{ mt: { xs: 1, sm: 0 }, ml: { xs: 0, sm: 2 } }}
+                    sx={{
+                        mt: { xs: 1, sm: 0 },
+                        ml: { xs: 0, sm: 2 },
+                        width: { xs: "100%", sm: "initial" },
+                    }}
                     onClick={() => setIsEditModalOpen(true)}
                 >
                     Edit Details

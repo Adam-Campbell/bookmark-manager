@@ -9,12 +9,14 @@ import {
     List,
     Paper,
     IconButton,
+    Button,
 } from "@mui/material";
 import { type CollectionWithBookmarks, type Bookmark } from "../types";
 import { queryClient } from "../http";
 import CollectionHeader from "../components/CollectionHeader";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import BookmarkListItem from "../components/BookmarkListItem";
+import AddIcon from "@mui/icons-material/Add";
 
 type RemovableBookmarkListItemProps = {
     bookmark: Bookmark;
@@ -75,7 +77,25 @@ export default function CollectionPage() {
                 id={data.id}
                 bookmarkCount={data.bookmarks.length}
             />
-            <Paper variant="outlined" sx={{ mt: 3 }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: { xs: "center", sm: "flex-end" },
+                    alignItems: "center",
+                    py: 2,
+                    px: 0,
+                }}
+            >
+                <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ width: { xs: "100%", sm: "initial" } }}
+                    startIcon={<AddIcon />}
+                >
+                    Add Bookmarks
+                </Button>
+            </Box>
+            <Paper variant="outlined">
                 <List>
                     {data.bookmarks.map((bookmark, index) => (
                         <RemovableBookmarkListItem
