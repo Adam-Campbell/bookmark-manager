@@ -34,8 +34,12 @@ export type BookmarkWithCollections = Bookmark & {
     collections: Collection[];
 };
 
+export type BookmarkWithIndex = Bookmark & {
+    bookmarkIndex: number;
+};
+
 export type CollectionWithBookmarks = Collection & {
-    bookmarks: Array<Bookmark & { bookmarkIndex: number }>;
+    bookmarks: Array<BookmarkWithIndex>;
 };
 
 export type TagRepresentation = {

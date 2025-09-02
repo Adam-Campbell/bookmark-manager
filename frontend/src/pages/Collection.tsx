@@ -1,56 +1,25 @@
-import { useParams, type LoaderFunctionArgs } from "react-router";
-import { useQuery } from "@tanstack/react-query";
-import {
-    Container,
-    ListItem,
-    Box,
-    Typography,
-    Link,
-    List,
-    Paper,
-    IconButton,
-    Button,
-} from "@mui/material";
-import { type CollectionWithBookmarks, type Bookmark } from "../types";
-import { queryClient } from "../http";
-import CollectionHeader from "../components/CollectionHeader";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
-import BookmarkListItem from "../components/BookmarkListItem";
 import AddIcon from "@mui/icons-material/Add";
-
-type RemovableBookmarkListItemProps = {
-    bookmark: Bookmark;
-    includeBorder?: boolean;
-};
-
-function RemovableBookmarkListItem({
-    bookmark,
-    includeBorder,
-}: RemovableBookmarkListItemProps) {
-    return (
-        <BookmarkListItem
-            bookmark={bookmark}
-            includeBorder={includeBorder}
-            showFullDetail={true}
-            controls={
-                <IconButton>
-                    <RemoveCircleIcon />
-                </IconButton>
-            }
-        />
-    );
-}
+import { Container, Box, List, Paper, Button } from "@mui/material";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { useParams, type LoaderFunctionArgs } from "react-router";
+import AddBookmarksToCollectionModal from "../components/AddBookmarksToCollectionModal";
+import CollectionHeader from "../components/CollectionHeader";
+import RemovableBookmarkListItem from "../components/RemovableBookmarkListItem";
+import { queryClient } from "../http";
+import { type CollectionWithBookmarks } from "../types";
 
 export default function CollectionPage() {
     const params = useParams();
+    const [addBookmarksModalIsOpen, setAddBookmarksModalIsOpen] =
+        useState(false);
 
     const id = Number(params.id);
 
-    const { data } = useQuery({
+    const { data: collection } = useQuery({
         queryKey: ["collections", { id }],
         staleTime: 5 * 60 * 1000, // 5 minutes
         queryFn: async ({ signal }) => {
-            console.log("Fetching collection from hook");
             const response = await fetch(`/api/collections/${id}`, {
                 credentials: "include",
                 signal,
@@ -63,19 +32,47 @@ export default function CollectionPage() {
         },
     });
 
-    console.log(data);
+    const { mutate } = useMutation({
+        mutationFn: async (bookmarkIds: number[]) => {
+            const response = await fetch(`/api/collections/${id}/bookmarks`, {
+                credentials: "include",
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ bookmarkIds }),
+            });
+            if (!response.ok) {
+                throw new Error("Failed to remove bookmark from collection");
+            }
+        },
+        onSuccess: () => {
+            console.log("Bookmark successfully removed");
+            queryClient.invalidateQueries({ queryKey: ["collections"] });
+        },
+    });
 
-    if (!data) {
+    function handleRemoveBookmark(bookmarkId: number) {
+        const bookmarks = collection?.bookmarks ?? [];
+        const updatedBookmarkIds = bookmarks
+            .map((bookmark) => bookmark.id)
+            .filter((id) => id !== bookmarkId);
+        mutate(updatedBookmarkIds);
+    }
+
+    if (!collection) {
         return null;
     }
+
+    console.log(collection);
 
     return (
         <Container sx={{ py: 6 }}>
             <CollectionHeader
-                title={data.title}
-                description={data.description}
-                id={data.id}
-                bookmarkCount={data.bookmarks.length}
+                title={collection.title}
+                description={collection.description}
+                id={collection.id}
+                bookmarkCount={collection.bookmarks.length}
             />
             <Box
                 sx={{
@@ -91,17 +88,26 @@ export default function CollectionPage() {
                     color="primary"
                     sx={{ width: { xs: "100%", sm: "initial" } }}
                     startIcon={<AddIcon />}
+                    onClick={() => setAddBookmarksModalIsOpen(true)}
                 >
                     Add Bookmarks
                 </Button>
             </Box>
+            <AddBookmarksToCollectionModal
+                currentBookmarks={collection.bookmarks}
+                isOpen={addBookmarksModalIsOpen}
+                onClose={() => setAddBookmarksModalIsOpen(false)}
+            />
             <Paper variant="outlined">
                 <List>
-                    {data.bookmarks.map((bookmark, index) => (
+                    {collection.bookmarks.map((bookmark, index) => (
                         <RemovableBookmarkListItem
                             key={bookmark.id}
                             bookmark={bookmark}
                             includeBorder={index !== 0}
+                            handleRemoveClick={() =>
+                                handleRemoveBookmark(bookmark.id)
+                            }
                         />
                     ))}
                 </List>
@@ -115,7 +121,6 @@ export const collectionLoader = async ({ params }: LoaderFunctionArgs) => {
     await queryClient.ensureQueryData({
         queryKey: ["collections", { id: Number(id) }],
         queryFn: async () => {
-            console.log("Fetching collection from page loader");
             const response = await fetch(`/api/collections/${id}`, {
                 credentials: "include",
             });
