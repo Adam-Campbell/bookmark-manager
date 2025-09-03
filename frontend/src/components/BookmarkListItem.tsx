@@ -1,5 +1,5 @@
-import { Box, ListItem, Typography, Link, Chip } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { Box, ListItem, Typography, Link, Chip } from "@mui/material";
 import { type Bookmark } from "../types";
 
 type BookmarkListItemProps = {
@@ -7,6 +7,8 @@ type BookmarkListItemProps = {
     includeBorder?: boolean;
     showFullDetail?: boolean;
     controls?: React.ReactNode;
+    ref?: (element: HTMLElement | null) => void;
+    dataIndex?: number;
 };
 
 export default function BookmarkListItem({
@@ -14,12 +16,16 @@ export default function BookmarkListItem({
     includeBorder,
     showFullDetail = false,
     controls,
+    ref,
+    dataIndex,
 }: BookmarkListItemProps) {
     const { title, url, description, tags } = bookmark;
 
     return (
         <>
             <ListItem
+                ref={ref}
+                data-index={dataIndex}
                 sx={{
                     flexDirection: "column",
                     alignItems: "flex-start",

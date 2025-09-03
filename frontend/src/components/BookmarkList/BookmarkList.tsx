@@ -1,8 +1,10 @@
-import { Paper, List, Typography, Button } from "@mui/material";
-import { EditableBookmarkListItem } from "./EditableBookmarkListItem";
-import { type Bookmark } from "../../types";
 import AddIcon from "@mui/icons-material/Add";
+import { Box, Paper, List, Typography, Button } from "@mui/material";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useRef } from "react";
 import { useModal } from "../../ModalContext";
+import { type Bookmark } from "../../types";
+import { EditableBookmarkListItem } from "./EditableBookmarkListItem";
 
 type BookmarkListProps = {
     bookmarksToDisplay: Bookmark[];
@@ -10,20 +12,28 @@ type BookmarkListProps = {
     userHasBookmarks: boolean;
 };
 
-// If !userHasBookmarks, display no created bookmarks message.
-// Else if bookmarksToDisplay.length === 0, display no bookmarks match message.
-// Else display bookmarksToDisplay
-
 export default function BookmarkList({
     bookmarksToDisplay,
     showFullDetail,
     userHasBookmarks,
 }: BookmarkListProps) {
     const { openModal } = useModal();
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const virtualizer = useWindowVirtualizer({
+        count: bookmarksToDisplay.length,
+        estimateSize: () => 190,
+        overscan: 5,
+        scrollMargin: containerRef.current?.offsetTop ?? 0,
+    });
 
     function handleCreateBookmarkClick() {
         openModal("addBookmark");
     }
+
+    const items = virtualizer.getVirtualItems();
+    const listTranslate =
+        (items[0]?.start ?? 0) - virtualizer.options.scrollMargin;
 
     if (!userHasBookmarks) {
         return (
@@ -57,17 +67,45 @@ export default function BookmarkList({
     }
 
     return (
-        <Paper variant="outlined">
-            <List>
-                {bookmarksToDisplay.map((bookmark, index) => (
-                    <EditableBookmarkListItem
-                        key={bookmark.id}
-                        bookmark={bookmark}
-                        showFullDetail={showFullDetail}
-                        includeBorder={index !== 0}
-                    />
-                ))}
-            </List>
+        <Paper ref={containerRef} variant="outlined">
+            <Box
+                sx={{
+                    position: "relative",
+                    width: "100%",
+                }}
+                style={{
+                    height: `${virtualizer.getTotalSize()}px`,
+                }}
+            >
+                <List
+                    disablePadding
+                    sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        willChange: "transform",
+                    }}
+                    style={{
+                        transform: `translateY(${listTranslate}px)`,
+                    }}
+                >
+                    {items.map((virtualItem) => {
+                        const bookmark = bookmarksToDisplay[virtualItem.index];
+                        if (!bookmark) return null;
+                        return (
+                            <EditableBookmarkListItem
+                                key={virtualItem.key}
+                                bookmark={bookmark}
+                                showFullDetail={showFullDetail}
+                                includeBorder={virtualItem.index !== 0}
+                                ref={virtualizer.measureElement}
+                                dataIndex={virtualItem.index}
+                            />
+                        );
+                    })}
+                </List>
+            </Box>
         </Paper>
     );
 }

@@ -1,20 +1,24 @@
 import { memo, useState } from "react";
 import { type Bookmark } from "../../types";
-import { BookmarkOptionsMenu } from "./BookmarkOptionsMenu";
+import BookmarkListItem from "../BookmarkListItem";
 import { BookmarkDeletionModal } from "./BookmarkDeletionModal";
 import { BookmarkEditModal } from "./BookmarkEditModal";
-import BookmarkListItem from "../BookmarkListItem";
+import { BookmarkOptionsMenu } from "./BookmarkOptionsMenu";
 
 type BookmarkListItemProps = {
     bookmark: Bookmark;
     includeBorder?: boolean;
     showFullDetail?: boolean;
+    ref: (element: HTMLElement | null) => void;
+    dataIndex: number;
 };
 
 export const EditableBookmarkListItem = memo(function EditableBookmarkListItem({
     bookmark,
     includeBorder,
     showFullDetail = false,
+    ref,
+    dataIndex,
 }: BookmarkListItemProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -22,6 +26,8 @@ export const EditableBookmarkListItem = memo(function EditableBookmarkListItem({
     return (
         <>
             <BookmarkListItem
+                ref={ref}
+                dataIndex={dataIndex}
                 bookmark={bookmark}
                 includeBorder={includeBorder}
                 showFullDetail={showFullDetail}
