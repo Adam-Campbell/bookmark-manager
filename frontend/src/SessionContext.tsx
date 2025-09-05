@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { authClient } from "./authClient";
 import { useNavigate } from "react-router";
+import { queryClient } from "./http";
 
 type UserData = {
     name: string;
@@ -24,6 +25,7 @@ type SessionContextValue = {
     signIn: (email: string, password: string) => Promise<void>;
     signUp: (email: string, password: string, name: string) => Promise<void>;
     signOut: () => Promise<void>;
+    setSessionData: (sessionData: SessionData) => void;
 };
 
 const SessionContext = createContext<SessionContextValue | undefined>(
@@ -80,6 +82,7 @@ export const SessionProvider = ({
             return;
         }
         setData({ token: null, user: null });
+        queryClient.clear();
         navigate("/sign-in");
     };
 
@@ -92,6 +95,7 @@ export const SessionProvider = ({
                 signUp,
                 signIn,
                 signOut,
+                setSessionData: setData,
             }}
         >
             {children}

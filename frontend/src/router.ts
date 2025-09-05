@@ -1,12 +1,13 @@
 import { createBrowserRouter, redirect } from "react-router";
-import RootLayout, { rootLoader } from "./pages/Root";
-import SignUpPage from "./pages/SignUp";
-import SignInPage from "./pages/SignIn";
+import { authClient } from "./authClient";
 import AboutPage from "./pages/About";
 import BookmarksPage, { bookmarksLoader } from "./pages/Bookmarks";
-import CollectionsPage, { collectionsLoader } from "./pages/Collections";
 import CollectionPage, { collectionLoader } from "./pages/Collection";
-import { authClient } from "./authClient";
+import CollectionsPage, { collectionsLoader } from "./pages/Collections";
+import RootLayout, { rootLoader } from "./pages/Root";
+import SignInPage from "./pages/SignIn";
+import SignUpPage from "./pages/SignUp";
+import UserSettingsPage, { userSettingsLoader } from "./pages/UserSettings";
 
 export const router = createBrowserRouter([
     {
@@ -53,6 +54,11 @@ export const router = createBrowserRouter([
                 path: "collections/:id",
                 Component: CollectionPage,
                 loader: collectionLoader,
+            },
+            {
+                path: "user-settings",
+                Component: UserSettingsPage,
+                loader: userSettingsLoader,
             },
         ],
     },

@@ -14,4 +14,12 @@ export const auth = betterAuth({
             maxAge: 5 * 60,
         },
     },
+    user: {
+        changeEmail: {
+            enabled: true,
+        },
+        deleteUser: {
+            enabled: true,
+        },
+    },
 });

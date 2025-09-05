@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { IconButton, Avatar, Menu, MenuItem } from "@mui/material";
+import { useState } from "react";
+import { Link as RouterLink } from "react-router";
 import { useSession } from "../../SessionContext";
 
 export function UserMenu() {
@@ -53,7 +54,13 @@ export function UserMenu() {
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
             >
-                <MenuItem onClick={handleClose}>View Profile</MenuItem>
+                <MenuItem
+                    component={RouterLink}
+                    to="/user-settings"
+                    onClick={handleClose}
+                >
+                    User Settings
+                </MenuItem>
                 <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
             </Menu>
         </>
