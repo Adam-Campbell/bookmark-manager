@@ -1,12 +1,16 @@
-import { Box } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import AccountSettingsPanel from "../components/AccountSettingsPanel";
+import TagManager from "../components/TagManager";
 import { queryClient } from "../http";
 import { type Tag } from "../types";
 
 export default function UserSettingsPage() {
     return (
         <Box sx={{ pt: 6, pb: 12 }}>
-            <AccountSettingsPanel />
+            <Container maxWidth="lg">
+                <AccountSettingsPanel />
+                <TagManager />
+            </Container>
         </Box>
     );
 }

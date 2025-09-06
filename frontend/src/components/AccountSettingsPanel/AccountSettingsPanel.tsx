@@ -1,4 +1,4 @@
-import { Container, Paper, Box, Button } from "@mui/material";
+import { Paper, Box, Button, Typography } from "@mui/material";
 import { useState } from "react";
 import { authClient } from "../../authClient";
 import { ChangePasswordModal } from "./ChangePasswordModal";
@@ -17,8 +17,11 @@ export default function AccountSettingsPanel() {
         return null;
     }
     return (
-        <Container maxWidth="lg" sx={{ py: 0 }}>
+        <>
             <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="h4" component="h1" gutterBottom>
+                    Account Settings
+                </Typography>
                 <EmailInlineEditRow />
                 <NameInlineEditRow pushDown />
                 <Box
@@ -56,6 +59,6 @@ export default function AccountSettingsPanel() {
                 isOpen={deleteAccountModalIsOpen}
                 onClose={() => setDeleteAccountModalIsOpen(false)}
             />
-        </Container>
+        </>
     );
 }
