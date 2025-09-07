@@ -295,7 +295,8 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     .send({ error: "Collection not found" });
             }
 
-            const validBookmarks: { id: number }[] =
+            // Get all bookmarks that have ids included in bookmarkIds
+            const matchingBookmarks: { id: number }[] =
                 await prisma.bookmark.findMany({
                     where: {
                         id: { in: bookmarkIds },
@@ -304,8 +305,11 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     select: { id: true },
                 });
 
-            const validBookmarkIds = validBookmarks.map(
-                (bookmark) => bookmark.id
+            // Filter bookmarkIds down to just those ids for which a bookmark does
+            // exist (belonging to the current user). Of the ids that remain, relative
+            // order stays the same.
+            const validBookmarkIds = bookmarkIds.filter((bookmarkId) =>
+                matchingBookmarks.some((bookmark) => bookmark.id === bookmarkId)
             );
 
             try {
