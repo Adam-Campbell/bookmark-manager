@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    TextField,
-    DialogActions,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { queryClient } from "../../http";
 import {
     type CollectionResourceBody,
@@ -34,12 +34,17 @@ export function CollectionEditModal({
     const [collectionDescription, setCollectionDescription] =
         useState(description);
 
-    useEffect(() => {
-        if (isOpen) {
-            setCollectionTitle(title);
-            setCollectionDescription(description);
-        }
-    }, [isOpen, title, description]);
+    const [prevIsOpen, setPrevIsOpen] = useState<boolean | undefined>(
+        undefined
+    );
+
+    if (isOpen && !prevIsOpen) {
+        setPrevIsOpen(true);
+        setCollectionTitle(title);
+        setCollectionDescription(description);
+    } else if (!isOpen && prevIsOpen) {
+        setPrevIsOpen(false);
+    }
 
     const { mutate, isPending } = useMutation({
         mutationFn: async ({
