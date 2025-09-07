@@ -34,17 +34,19 @@ export function BookmarkEditModal({
     const [bookmarkTags, setBookmarkTags] = useState<TagRepresentation[]>(
         bookmark.tags.map((tag) => ({ id: tag.id, name: tag.name }))
     );
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-    useEffect(() => {
-        if (isOpen) {
-            setBookmarkTitle(bookmark.title);
-            setBookmarkUrl(bookmark.url);
-            setBookmarkDescription(bookmark.description);
-            setBookmarkTags(
-                bookmark.tags.map((tag) => ({ id: tag.id, name: tag.name }))
-            );
-        }
-    }, [isOpen]);
+    if (isOpen && !prevIsOpen) {
+        setPrevIsOpen(true);
+        setBookmarkTitle(bookmark.title);
+        setBookmarkUrl(bookmark.url);
+        setBookmarkDescription(bookmark.description);
+        setBookmarkTags(
+            bookmark.tags.map((tag) => ({ id: tag.id, name: tag.name }))
+        );
+    } else if (!isOpen && prevIsOpen) {
+        setPrevIsOpen(false);
+    }
 
     const { mutate } = useMutation({
         mutationFn: async ({
