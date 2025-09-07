@@ -6,22 +6,19 @@ import {
     Button,
     Chip,
 } from "@mui/material";
-import { type CollectionWithBookmarkCount } from "../../types";
 import { Link as RouterLink } from "react-router";
+import { type CollectionWithBookmarkCount } from "../../types";
+import { countFormatter } from "../../utils";
 
 export function CollectionCard({
     collection,
 }: {
     collection: CollectionWithBookmarkCount;
 }) {
-    let bookmarkCountText = "";
-    if (collection.bookmarkCount === 0) {
-        bookmarkCountText = "No bookmarks";
-    } else if (collection.bookmarkCount === 1) {
-        bookmarkCountText = "1 bookmark";
-    } else {
-        bookmarkCountText = collection.bookmarkCount + " bookmarks";
-    }
+    let bookmarkCountText = countFormatter(
+        collection.bookmarkCount,
+        "bookmark"
+    );
 
     return (
         <Card

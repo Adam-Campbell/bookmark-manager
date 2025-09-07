@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Paper, Box, Typography, Button } from "@mui/material";
-import BookmarkCountChip from "../BookmarkCountChip";
-import { CollectionEditModal } from "./CollectionEditModal";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import { Paper, Box, Typography, Button, Chip } from "@mui/material";
+import { useState } from "react";
+import { countFormatter } from "../../utils";
 import { CollectionDeletionModal } from "./CollectionDeletionModal";
+import { CollectionEditModal } from "./CollectionEditModal";
 
 type CollectionHeaderProps = {
     title: string;
@@ -21,6 +21,8 @@ export default function CollectionHeader({
 }: CollectionHeaderProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    let bookmarkCountText = countFormatter(bookmarkCount, "bookmark");
 
     return (
         <Paper variant="outlined" sx={{ padding: 2 }}>
@@ -42,7 +44,7 @@ export default function CollectionHeader({
                     marginTop: 2,
                 }}
             >
-                <BookmarkCountChip count={bookmarkCount} />
+                <Chip label={bookmarkCountText} size="small" />
                 <Button
                     variant="contained"
                     color="secondary"
