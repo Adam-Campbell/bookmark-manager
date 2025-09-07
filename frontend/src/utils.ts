@@ -1,6 +1,6 @@
 /**
- * Delays the resolution of a promise by a specified amount of time.
- * Used for testing loading states etc.
+ * Takes the value and returns a promise that resolves with that value after the specified delay.
+ * Can be awaited for testing purposes.
  * @param ms The amount of time to delay, in milliseconds.
  * @param value The value to resolve the promise with.
  * @returns A promise that resolves with the specified value after the delay.
