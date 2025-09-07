@@ -1,21 +1,21 @@
-import { useState, useEffect } from "react";
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { queryClient } from "../../http";
 import {
     type Bookmark,
-    type TagRepresentation,
     type BookmarkResourceBody,
     type BookmarkWithCollections,
+    type TagRepresentation,
 } from "../../types";
 import TagsAutocomplete from "../TagsAutocomplete";
-import { queryClient } from "../../http";
 
 export function BookmarkEditModal({
     bookmark,
@@ -34,7 +34,9 @@ export function BookmarkEditModal({
     const [bookmarkTags, setBookmarkTags] = useState<TagRepresentation[]>(
         bookmark.tags.map((tag) => ({ id: tag.id, name: tag.name }))
     );
-    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+    const [prevIsOpen, setPrevIsOpen] = useState<boolean | undefined>(
+        undefined
+    );
 
     if (isOpen && !prevIsOpen) {
         setPrevIsOpen(true);
