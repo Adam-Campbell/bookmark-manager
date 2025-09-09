@@ -6,8 +6,7 @@ import { useParams, type LoaderFunctionArgs } from "react-router";
 import AddBookmarksToCollectionModal from "../components/AddBookmarksToCollectionModal";
 import CollectionHeader from "../components/CollectionHeader";
 import RemovableBookmarkListItem from "../components/RemovableBookmarkListItem";
-import { queryClient } from "../http";
-import { type CollectionWithBookmarks } from "../types";
+import { queryClient, collectionQuery } from "../http";
 
 export default function CollectionPage() {
     const params = useParams();
@@ -16,21 +15,12 @@ export default function CollectionPage() {
 
     const id = Number(params.id);
 
-    const { data: collection } = useQuery({
-        queryKey: ["collections", { id }],
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        queryFn: async ({ signal }) => {
-            const response = await fetch(`/api/collections/${id}`, {
-                credentials: "include",
-                signal,
-            });
-            if (!response.ok) {
-                throw new Error("Failed to fetch collection");
-            }
-            const collection: CollectionWithBookmarks = await response.json();
-            return collection;
-        },
-    });
+    const { data: collectionData } = useQuery(
+        collectionQuery({
+            id,
+            shouldShowSnackbar: true,
+        })
+    );
 
     const { mutate } = useMutation({
         mutationFn: async (bookmarkIds: number[]) => {
@@ -53,26 +43,24 @@ export default function CollectionPage() {
     });
 
     function handleRemoveBookmark(bookmarkId: number) {
-        const bookmarks = collection?.bookmarks ?? [];
+        const bookmarks = collectionData?.bookmarks ?? [];
         const updatedBookmarkIds = bookmarks
             .map((bookmark) => bookmark.id)
             .filter((id) => id !== bookmarkId);
         mutate(updatedBookmarkIds);
     }
 
-    if (!collection) {
+    if (!collectionData) {
         return null;
     }
-
-    console.log(collection);
 
     return (
         <Container sx={{ py: 6 }}>
             <CollectionHeader
-                title={collection.title}
-                description={collection.description}
-                id={collection.id}
-                bookmarkCount={collection.bookmarks.length}
+                title={collectionData.title}
+                description={collectionData.description}
+                id={collectionData.id}
+                bookmarkCount={collectionData.bookmarks.length}
             />
             <Box
                 sx={{
@@ -94,13 +82,13 @@ export default function CollectionPage() {
                 </Button>
             </Box>
             <AddBookmarksToCollectionModal
-                currentBookmarks={collection.bookmarks}
+                currentBookmarks={collectionData.bookmarks}
                 isOpen={addBookmarksModalIsOpen}
                 onClose={() => setAddBookmarksModalIsOpen(false)}
             />
             <Paper variant="outlined">
                 <List>
-                    {collection.bookmarks.map((bookmark, index) => (
+                    {collectionData.bookmarks.map((bookmark, index) => (
                         <RemovableBookmarkListItem
                             key={bookmark.id}
                             bookmark={bookmark}
@@ -117,18 +105,6 @@ export default function CollectionPage() {
 }
 
 export const collectionLoader = async ({ params }: LoaderFunctionArgs) => {
-    const { id } = params;
-    await queryClient.ensureQueryData({
-        queryKey: ["collections", { id: Number(id) }],
-        queryFn: async () => {
-            const response = await fetch(`/api/collections/${id}`, {
-                credentials: "include",
-            });
-            if (!response.ok) {
-                throw new Error("Failed to fetch collection");
-            }
-            const collection: CollectionWithBookmarks = await response.json();
-            return collection;
-        },
-    });
+    const id = Number(params.id);
+    await queryClient.ensureQueryData(collectionQuery({ id }));
 };

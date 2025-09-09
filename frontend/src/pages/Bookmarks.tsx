@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Box, Container, FormControlLabel, Switch } from "@mui/material";
 import Fuse from "fuse.js";
-import { queryClient } from "../http";
+import { queryClient, bookmarksQuery } from "../http";
 import StickyPanel from "../components/SitckyPanel";
 import BookmarkSearchBar from "../components/BookmarkSearchBar";
 import TagsAutocomplete from "../components/TagsAutocomplete";
@@ -40,24 +40,14 @@ export default function BookmarksPage() {
 
     const [isShowingFullDetail, setIsShowingFullDetail] = useState(true);
 
-    const { data, error, isPending, isError } = useQuery({
-        queryKey: ["bookmarks"],
-        placeholderData: [],
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        queryFn: async (): Promise<Bookmark[]> => {
-            const response = await fetch("/api/bookmarks", {
-                credentials: "include",
-            });
-            if (!response.ok) {
-                throw new Error("Failed to fetch bookmarks");
-            }
-            const bookmarks: Bookmark[] = await response.json();
-            return bookmarks;
-        },
-    });
+    const { data: bookmarksData } = useQuery(
+        bookmarksQuery({
+            shouldShowSnackbar: true,
+        })
+    );
 
     const bookmarksToDisplay = useMemo(() => {
-        const allBookmarks = data ?? [];
+        const allBookmarks = bookmarksData ?? [];
         let filteredBookmarks = filterBookmarksByTags(allBookmarks, chosenTags);
         if (searchQuery.trim() === "") {
             return filteredBookmarks;
@@ -69,7 +59,7 @@ export default function BookmarksPage() {
         const searchResults = fuse.search(searchQuery);
         const bookmarkResults = searchResults.map((result) => result.item);
         return bookmarkResults;
-    }, [data, chosenTags, searchQuery]);
+    }, [bookmarksData, chosenTags, searchQuery]);
 
     return (
         <Box sx={{ py: 4 }}>
@@ -103,7 +93,7 @@ export default function BookmarksPage() {
                 <BookmarkList
                     bookmarksToDisplay={bookmarksToDisplay}
                     showFullDetail={isShowingFullDetail}
-                    userHasBookmarks={Boolean(data?.length)}
+                    userHasBookmarks={Boolean(bookmarksData?.length)}
                 />
             </Container>
         </Box>
@@ -111,17 +101,5 @@ export default function BookmarksPage() {
 }
 
 export const bookmarksLoader = async () => {
-    await queryClient.ensureQueryData({
-        queryKey: ["bookmarks"],
-        queryFn: async () => {
-            const response = await fetch("/api/bookmarks", {
-                credentials: "include",
-            });
-            if (!response.ok) {
-                throw new Error("Failed to fetch bookmarks");
-            }
-            const bookmarks: Bookmark[] = await response.json();
-            return bookmarks;
-        },
-    });
+    await queryClient.ensureQueryData(bookmarksQuery());
 };

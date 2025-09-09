@@ -9,12 +9,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useParams } from "react-router";
 import { useBookmarkSearch } from "../../hooks";
-import { queryClient } from "../../http";
-import {
-    type BookmarkWithIndex,
-    type Bookmark,
-    type TagRepresentation,
-} from "../../types";
+import { queryClient, bookmarksQuery } from "../../http";
+import { type BookmarkWithIndex, type TagRepresentation } from "../../types";
 import BookmarkSearchBar from "../BookmarkSearchBar";
 import TagsAutocomplete from "../TagsAutocomplete";
 import { BookmarkVirtualList } from "./BookmarkVirtualList";
@@ -45,20 +41,11 @@ export default function AddBookmarksToCollectionModal({
         }
     }, [isOpen]);
 
-    const { data: allBookmarks } = useQuery({
-        placeholderData: [],
-        queryKey: ["bookmarks"],
-        queryFn: async (): Promise<Bookmark[]> => {
-            const response = await fetch("/api/bookmarks", {
-                credentials: "include",
-            });
-            if (!response.ok) {
-                throw new Error("Failed to fetch bookmarks");
-            }
-            const bookmarks: Bookmark[] = await response.json();
-            return bookmarks;
-        },
-    });
+    const { data: allBookmarks } = useQuery(
+        bookmarksQuery({
+            shouldShowSnackbar: true,
+        })
+    );
 
     const { mutate, isPending: bookmarksMutationIsPending } = useMutation({
         mutationFn: async (bookmarkIds: number[]) => {

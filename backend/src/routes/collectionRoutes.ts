@@ -73,6 +73,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 response: {
                     200: CollectionWithBookmarksSchema,
                     401: z.object({ error: z.string() }),
+                    403: z.object({ error: z.string() }),
                     404: z.object({ error: z.string() }),
                 },
             },
@@ -84,7 +85,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             }
             const { id } = request.params;
             const collection = await prisma.collection.findUnique({
-                where: { id, userId },
+                where: { id },
                 include: {
                     bookmarks: {
                         orderBy: { bookmarkIndex: "asc" },
@@ -101,6 +102,13 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 return reply
                     .status(404)
                     .send({ error: "Collection not found" });
+            }
+            if (collection.userId !== userId) {
+                return reply
+                    .status(403)
+                    .send({
+                        error: "You do not have permission to access this collection",
+                    });
             }
             collection.bookmarks = collection.bookmarks.map(
                 (bic: { bookmarkIndex: number; bookmark: Bookmark }) => ({

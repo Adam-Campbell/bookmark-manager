@@ -1,26 +1,14 @@
 import { Paper, List, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { type Tag, type TagRepresentation } from "../../types";
+import { tagsQuery, transformTagsToTagRepresentations } from "../../http";
 import { TagListItem } from "./TagListItem";
 
 export default function TagManager() {
-    const { data: tagsData } = useQuery({
-        placeholderData: [],
-        queryKey: ["tags"],
-        queryFn: async () => {
-            const response = await fetch("/api/tags", {
-                credentials: "include",
-            });
-            if (!response.ok) {
-                throw new Error("Failed to fetch tags");
-            }
-            const tags: Tag[] = await response.json();
-            return tags;
-        },
-        select: (tags: Tag[]): TagRepresentation[] => {
-            return tags.map((tag) => ({ id: tag.id, name: tag.name }));
-        },
-    });
+    const { data: tagsData } = useQuery(
+        tagsQuery({
+            select: transformTagsToTagRepresentations,
+        })
+    );
 
     if (!tagsData) {
         return null;

@@ -1,6 +1,7 @@
 import { Autocomplete, TextField, CircularProgress } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { type Tag, type TagRepresentation } from "../types";
+import { tagsQuery, transformTagsToTagRepresentations } from "../http";
+import { type TagRepresentation } from "../types";
 
 export type TagsAutocompleteProps = {
     chosenTags: TagRepresentation[];
@@ -15,27 +16,18 @@ export default function TagsAutocomplete({
     label = "Add Tags",
     placeholder = "Add Tags",
 }: TagsAutocompleteProps) {
-    const { data, isPending } = useQuery({
-        queryKey: ["tags"],
-        staleTime: 5 * 60 * 1000,
-        queryFn: async () => {
-            const response = await fetch("/api/tags", {
-                credentials: "include",
-            });
-            if (!response.ok) {
-                throw new Error("Failed to fetch tags");
-            }
-            const tags: Tag[] = await response.json();
-            return tags.map((tag) => ({ id: tag.id, name: tag.name }));
-        },
-    });
-
-    const tagsData = data || [];
+    const { data: tagsData, isPending } = useQuery(
+        tagsQuery({
+            shouldShowSnackbar: true,
+            select: transformTagsToTagRepresentations,
+        })
+    );
 
     return (
         <Autocomplete
             multiple
             freeSolo
+            forcePopupIcon
             filterOptions={(options, state) => {
                 const filtered = options.filter((opt) =>
                     opt.name
@@ -51,7 +43,7 @@ export default function TagsAutocomplete({
                 return filtered;
             }}
             loading={isPending}
-            options={tagsData}
+            options={tagsData ?? []}
             getOptionLabel={(option) => {
                 return typeof option === "string" ? option : option.name;
             }}

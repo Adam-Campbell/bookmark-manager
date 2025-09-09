@@ -4,6 +4,7 @@ import AboutPage from "./pages/About";
 import BookmarksPage, { bookmarksLoader } from "./pages/Bookmarks";
 import CollectionPage, { collectionLoader } from "./pages/Collection";
 import CollectionsPage, { collectionsLoader } from "./pages/Collections";
+import ErrorPage from "./pages/Error";
 import RootLayout, { rootLoader } from "./pages/Root";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
@@ -15,6 +16,7 @@ export const router = createBrowserRouter([
         Component: RootLayout,
         id: "root",
         loader: rootLoader,
+        ErrorBoundary: ErrorPage,
         children: [
             {
                 index: true,
