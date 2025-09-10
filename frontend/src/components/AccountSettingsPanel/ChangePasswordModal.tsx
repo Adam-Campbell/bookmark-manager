@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import { authClient } from "../../authClient";
 import { useSession } from "../../SessionContext";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 
 type ChangePasswordModalProps = {
     isOpen: boolean;
@@ -42,11 +43,12 @@ export function ChangePasswordModal({
             revokeOtherSessions: true,
         });
         if (error) {
-            console.log(error);
+            showErrorSnackbar("Failed to update password");
             return;
         }
         setSessionData(data);
         onClose();
+        showSuccessSnackbar("Password updated");
     }
 
     const isDisabled =

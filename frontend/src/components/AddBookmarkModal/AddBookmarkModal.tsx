@@ -13,6 +13,7 @@ import { CollectionsAutocomplete } from "./CollectionsAutocomplete";
 import { useSession } from "../../SessionContext";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import TagsAutocomplete from "../TagsAutocomplete";
 import {
     type TagRepresentation,
@@ -49,11 +50,14 @@ export default function AddBookmarkModal() {
             return bookmark;
         },
         onSuccess: () => {
-            console.log("Bookmark successfully added");
             queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
             queryClient.invalidateQueries({ queryKey: ["tags"] });
             queryClient.invalidateQueries({ queryKey: ["collections"] });
             closeModal();
+            showSuccessSnackbar("Bookmark added");
+        },
+        onError: () => {
+            showErrorSnackbar("Failed to add bookmark");
         },
     });
 

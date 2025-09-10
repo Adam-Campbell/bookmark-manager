@@ -12,6 +12,7 @@ import { useNavigate } from "react-router";
 import { authClient } from "../../authClient";
 import { queryClient } from "../../http";
 import { useSession } from "../../SessionContext";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 
 type DeleteAccountModalProps = {
     isOpen: boolean;
@@ -46,12 +47,15 @@ export function DeleteAccountModal({
         if (response?.error !== null) {
             if (response?.error?.code === "INVALID_PASSWORD") {
                 setErrorMessage("Password is incorrect.");
+            } else {
+                showErrorSnackbar("Failed to delete account");
             }
             return;
         }
         setSessionData({ token: null, user: null });
         queryClient.clear();
         navigate("/sign-up");
+        showSuccessSnackbar("Account deleted");
     }
 
     return (

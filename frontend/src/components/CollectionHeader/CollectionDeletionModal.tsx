@@ -6,8 +6,9 @@ import {
     Button,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "../../http";
 import { useNavigate } from "react-router";
+import { queryClient } from "../../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import { type CollectionWithBookmarkCount } from "../../types";
 
 export function CollectionDeletionModal({
@@ -52,6 +53,10 @@ export function CollectionDeletionModal({
                 ["collections"],
                 context?.previousAllCollections
             );
+            showErrorSnackbar("Failed to delete collection");
+        },
+        onSuccess: () => {
+            showSuccessSnackbar("Collection deleted");
         },
         onSettled: (_data, _error, id) => {
             onClose();

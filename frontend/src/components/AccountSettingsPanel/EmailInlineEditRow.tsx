@@ -1,5 +1,6 @@
 import { authClient } from "../../authClient";
 import { InlineEditRow } from "./InlineEditRow";
+import { showSuccessSnackbar } from "../../snackbarStore";
 
 export function EmailInlineEditRow({ pushDown }: { pushDown?: boolean }) {
     const { data, isPending, refetch } = authClient.useSession();
@@ -13,6 +14,7 @@ export function EmailInlineEditRow({ pushDown }: { pushDown?: boolean }) {
             newEmail,
         });
         refetch();
+        showSuccessSnackbar("Email updated");
     }
 
     const email = data?.user.email ?? "";

@@ -2,6 +2,7 @@ import { ListItem } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { queryClient } from "../../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import { type Tag } from "../../types";
 import { TagListItemDisplay } from "./TagListItemDisplay";
 import { TagListItemEdit } from "./TagListItemEdit";
@@ -38,6 +39,10 @@ export function TagListItem({ name, id, includeBorder }: TagListItemProps) {
         },
         onError: (_error, _variables, context) => {
             queryClient.setQueryData(["tags"], context?.previousTags);
+            showErrorSnackbar("Failed to delete tag");
+        },
+        onSuccess: () => {
+            showSuccessSnackbar("Tag deleted");
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["tags"] });
@@ -64,6 +69,10 @@ export function TagListItem({ name, id, includeBorder }: TagListItemProps) {
             queryClient.invalidateQueries({ queryKey: ["tags"] });
             queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
             queryClient.invalidateQueries({ queryKey: ["collections"] });
+            showSuccessSnackbar("Tag updated");
+        },
+        onError: () => {
+            showErrorSnackbar("Failed to update tag");
         },
     });
 

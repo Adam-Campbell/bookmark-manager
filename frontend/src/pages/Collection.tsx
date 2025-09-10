@@ -7,6 +7,7 @@ import AddBookmarksToCollectionModal from "../components/AddBookmarksToCollectio
 import CollectionHeader from "../components/CollectionHeader";
 import RemovableBookmarkListItem from "../components/RemovableBookmarkListItem";
 import { queryClient, collectionQuery } from "../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../snackbarStore";
 
 export default function CollectionPage() {
     const params = useParams();
@@ -39,6 +40,10 @@ export default function CollectionPage() {
         onSuccess: () => {
             console.log("Bookmark successfully removed");
             queryClient.invalidateQueries({ queryKey: ["collections"] });
+            showSuccessSnackbar("Bookmark removed");
+        },
+        onError: () => {
+            showErrorSnackbar("Failed to remove bookmark");
         },
     });
 

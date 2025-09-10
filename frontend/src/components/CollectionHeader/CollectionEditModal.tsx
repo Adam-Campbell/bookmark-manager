@@ -9,6 +9,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { queryClient } from "../../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import {
     type CollectionResourceBody,
     type CollectionWithBookmarks,
@@ -108,6 +109,10 @@ export function CollectionEditModal({
                 ["collections"],
                 context?.previousAllCollections
             );
+            showErrorSnackbar("Failed to update collection");
+        },
+        onSuccess: () => {
+            showSuccessSnackbar("Collection updated");
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["collections"] });

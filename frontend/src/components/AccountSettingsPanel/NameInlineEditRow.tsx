@@ -1,5 +1,6 @@
 import { authClient } from "../../authClient";
 import { InlineEditRow } from "./InlineEditRow";
+import { showSuccessSnackbar } from "../../snackbarStore";
 
 export function NameInlineEditRow({ pushDown }: { pushDown?: boolean }) {
     const { data, isPending, refetch } = authClient.useSession();
@@ -14,6 +15,7 @@ export function NameInlineEditRow({ pushDown }: { pushDown?: boolean }) {
             image: null,
         });
         refetch();
+        showSuccessSnackbar("Username updated");
     }
 
     const name = data?.user.name ?? "";

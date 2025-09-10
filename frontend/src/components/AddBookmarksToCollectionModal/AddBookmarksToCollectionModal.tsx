@@ -10,6 +10,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useParams } from "react-router";
 import { useBookmarkSearch } from "../../hooks";
 import { queryClient, bookmarksQuery } from "../../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import { type BookmarkWithIndex, type TagRepresentation } from "../../types";
 import BookmarkSearchBar from "../BookmarkSearchBar";
 import TagsAutocomplete from "../TagsAutocomplete";
@@ -65,9 +66,12 @@ export default function AddBookmarksToCollectionModal({
             }
         },
         onSuccess: () => {
-            console.log("Bookmarks successfully added");
             queryClient.invalidateQueries({ queryKey: ["collections"] });
             onClose();
+            showSuccessSnackbar("Bookmarks added");
+        },
+        onError: () => {
+            showErrorSnackbar("Failed to add bookmarks");
         },
     });
 

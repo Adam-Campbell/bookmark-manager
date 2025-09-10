@@ -9,6 +9,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { queryClient } from "../../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import {
     type Bookmark,
     type BookmarkResourceBody,
@@ -76,17 +77,15 @@ export function BookmarkEditModal({
             queryClient.invalidateQueries({ queryKey: ["tags"] });
             queryClient.invalidateQueries({ queryKey: ["collections"] });
             onClose();
+            showSuccessSnackbar("Bookmark updated");
+        },
+        onError: () => {
+            showErrorSnackbar("Failed to update bookmark");
         },
     });
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        // console.log({
-        //     title: bookmarkTitle,
-        //     url: bookmarkUrl,
-        //     description: bookmarkDescription,
-        //     tags: bookmarkTags,
-        // });
         mutate({
             title: bookmarkTitle,
             url: bookmarkUrl,

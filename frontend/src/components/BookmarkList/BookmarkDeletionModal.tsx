@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import { type Bookmark } from "../../types";
 
 type BookmarkDeletionModalProps = {
@@ -45,6 +46,10 @@ export function BookmarkDeletionModal({
                 ["bookmarks"],
                 context?.previousBookmarks
             );
+            showErrorSnackbar("Failed to delete bookmark");
+        },
+        onSuccess: () => {
+            showSuccessSnackbar("Bookmark deleted");
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["bookmarks"] });

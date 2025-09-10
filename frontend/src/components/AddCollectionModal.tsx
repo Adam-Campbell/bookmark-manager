@@ -12,6 +12,7 @@ import {
     CircularProgress,
 } from "@mui/material";
 import { queryClient } from "../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../snackbarStore";
 
 type CollectionResourceBody = {
     title: string;
@@ -42,9 +43,12 @@ export default function AddCollectionModal() {
             return collection;
         },
         onSuccess: () => {
-            console.log("Collection successfully created");
             queryClient.invalidateQueries({ queryKey: ["collections"] });
             closeModal();
+            showSuccessSnackbar("Collection created");
+        },
+        onError: () => {
+            showErrorSnackbar("Failed to create collection");
         },
     });
 
