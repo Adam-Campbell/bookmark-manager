@@ -7,6 +7,7 @@ import {
     type Tag,
     type TagRepresentation,
 } from "./types";
+import { showErrorSnackbar } from "./snackbarStore";
 
 export const queryClient = new QueryClient();
 
@@ -21,7 +22,7 @@ export async function getTags(
     if (!response.ok) {
         const { status } = response;
         if (shouldShowSnackbar) {
-            console.log("Here is where we would imperatively trigger snackbar");
+            showErrorSnackbar("An error occurred whilst fetching data");
         }
         throw new Response(undefined, {
             status,
@@ -66,7 +67,7 @@ export async function getCollections(
     if (!response.ok) {
         const { status } = response;
         if (shouldShowSnackbar) {
-            console.log("Here is where we would imperatively trigger snackbar");
+            showErrorSnackbar("An error occurred whilst fetching data");
         }
         throw new Response(undefined, {
             status,
@@ -116,7 +117,7 @@ export async function getCollection(
     if (!response.ok) {
         const { status } = response;
         if (shouldShowSnackbar) {
-            console.log("Here is where we would imperatively trigger snackbar");
+            showErrorSnackbar("An error occurred whilst fetching data");
         }
         throw new Response(undefined, { status });
     }
@@ -155,7 +156,7 @@ export async function getBookmarks(
     if (!response.ok) {
         const { status } = response;
         if (shouldShowSnackbar) {
-            console.log("Here is where we would imperatively trigger snackbar");
+            showErrorSnackbar("An error occurred whilst fetching data");
         }
         throw new Response(undefined, {
             status,
