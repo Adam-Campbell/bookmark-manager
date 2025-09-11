@@ -251,6 +251,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 response: {
                     204: z.undefined(),
                     401: z.object({ error: z.string() }),
+                    403: z.object({ error: z.string() }),
                     404: z.object({ error: z.string() }),
                     500: z.object({ error: z.string() }),
                 },
@@ -262,9 +263,44 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
             const { id } = request.params;
+            const bookmark = await prisma.bookmark.findUnique({
+                where: { id },
+                select: { userId: true },
+            });
+            if (!bookmark) {
+                return reply.status(404).send({ error: "Bookmark not found" });
+            }
+            if (bookmark.userId !== userId) {
+                return reply
+                    .status(403)
+                    .send({
+                        error: "You are not authorised to access this bookmark",
+                    });
+            }
             try {
-                await prisma.bookmark.delete({
-                    where: { id, userId },
+                await prisma.$transaction(async (tx: PrismaClient) => {
+                    const collectionInclusions =
+                        await tx.bookmarksInCollections.findMany({
+                            where: {
+                                bookmarkId: id,
+                            },
+                        });
+                    await Promise.all(
+                        collectionInclusions.map((ci) =>
+                            tx.bookmarksInCollections.updateMany({
+                                where: {
+                                    collectionId: ci.collectionId,
+                                    bookmarkIndex: { gt: ci.bookmarkIndex },
+                                },
+                                data: {
+                                    bookmarkIndex: { decrement: 1 },
+                                },
+                            })
+                        )
+                    );
+                    await tx.bookmark.delete({
+                        where: { id },
+                    });
                 });
                 reply.status(204).send();
             } catch (error) {
