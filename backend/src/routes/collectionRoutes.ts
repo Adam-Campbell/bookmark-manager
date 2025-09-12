@@ -6,6 +6,7 @@ import {
     CollectionWithBookmarkCountSchema,
     CollectionWithBookmarksSchema,
 } from "../schemas.ts";
+import bookmarksInCollectionRoutes from "./bookmarksInCollectionRoutes.ts";
 
 const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
     const { prisma } = fastify;
@@ -104,11 +105,9 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     .send({ error: "Collection not found" });
             }
             if (collection.userId !== userId) {
-                return reply
-                    .status(403)
-                    .send({
-                        error: "You do not have permission to access this collection",
-                    });
+                return reply.status(403).send({
+                    error: "You do not have permission to access this collection",
+                });
             }
             collection.bookmarks = collection.bookmarks.map(
                 (bic: { bookmarkIndex: number; bookmark: Bookmark }) => ({
@@ -265,107 +264,9 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         }
     );
 
-    fastify.put(
-        "/:id/bookmarks",
-        {
-            schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
-                body: z.object({
-                    bookmarkIds: z.array(z.coerce.number().int()),
-                }),
-                response: {
-                    200: CollectionWithBookmarksSchema,
-                    401: z.object({ error: z.string() }),
-                    404: z.object({ error: z.string() }),
-                    500: z.object({ error: z.string() }),
-                },
-            },
-        },
-        async (request, reply) => {
-            const userId = request.user?.id;
-            if (!userId) {
-                return reply.status(401).send({ error: "Unauthorized" });
-            }
-            const collectionId = request.params.id;
-            const { bookmarkIds } = request.body;
-
-            const collection = await prisma.collection.findUnique({
-                where: {
-                    id: collectionId,
-                    userId,
-                },
-            });
-            if (!collection) {
-                return reply
-                    .status(404)
-                    .send({ error: "Collection not found" });
-            }
-
-            // Get all bookmarks that have ids included in bookmarkIds
-            const matchingBookmarks: { id: number }[] =
-                await prisma.bookmark.findMany({
-                    where: {
-                        id: { in: bookmarkIds },
-                        userId,
-                    },
-                    select: { id: true },
-                });
-
-            // Filter bookmarkIds down to just those ids for which a bookmark does
-            // exist (belonging to the current user). Of the ids that remain, relative
-            // order stays the same.
-            const validBookmarkIds = bookmarkIds.filter((bookmarkId) =>
-                matchingBookmarks.some((bookmark) => bookmark.id === bookmarkId)
-            );
-
-            try {
-                await prisma.$transaction([
-                    prisma.bookmarksInCollections.deleteMany({
-                        where: { collectionId },
-                    }),
-                    prisma.bookmarksInCollections.createMany({
-                        data: validBookmarkIds.map((bookmarkId, index) => ({
-                            collectionId,
-                            bookmarkId,
-                            bookmarkIndex: index,
-                        })),
-                    }),
-                ]);
-
-                const collection = await prisma.collection.findUnique({
-                    where: {
-                        id: collectionId,
-                        userId,
-                    },
-                    include: {
-                        bookmarks: {
-                            orderBy: { bookmarkIndex: "asc" },
-                            select: {
-                                bookmarkIndex: true,
-                                bookmark: {
-                                    include: { tags: true },
-                                },
-                            },
-                        },
-                    },
-                });
-                collection.bookmarks = collection.bookmarks.map(
-                    (bic: { bookmarkIndex: number; bookmark: Bookmark }) => ({
-                        ...bic.bookmark,
-                        bookmarkIndex: bic.bookmarkIndex,
-                    })
-                );
-                reply.send(collection);
-            } catch (error) {
-                fastify.log.error(error);
-                return reply
-                    .status(500)
-                    .send({ error: "Internal Server Error" });
-            }
-        }
-    );
+    fastify.register(bookmarksInCollectionRoutes, {
+        prefix: "/:collectionId/bookmarks",
+    });
 };
 
 export default routes;
