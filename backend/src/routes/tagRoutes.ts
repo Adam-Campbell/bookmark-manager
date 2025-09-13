@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from "fastify";
-import { Prisma } from "../../generated/prisma/index.js";
+import { Prisma, type Tag } from "../../generated/prisma/index.js";
 import { type FastifyZod } from "../../types/index.ts";
 import { z } from "zod";
 import { TagSchema } from "../schemas.ts";
@@ -22,7 +22,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
-            const tags = await prisma.tag.findMany({
+            const tags: Tag[] = await prisma.tag.findMany({
                 where: { userId },
             });
             reply.send(tags);
@@ -48,7 +48,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
             const { name } = request.body;
-            const tag = await prisma.tag.create({
+            const tag: Tag = await prisma.tag.create({
                 data: { name, userId },
             });
             reply.send(tag);
@@ -68,6 +68,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 response: {
                     200: TagSchema,
                     401: z.object({ error: z.string() }),
+                    403: z.object({ error: z.string() }),
                     404: z.object({ error: z.string() }),
                     500: z.object({ error: z.string() }),
                 },
@@ -80,19 +81,39 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             }
             const { id } = request.params;
             const { name } = request.body;
+
             try {
-                const tag = await prisma.tag.update({
+                const tag: Prisma.TagGetPayload<{ select: { userId: true } }> =
+                    await prisma.tag.findUnique({
+                        where: { id },
+                        select: { userId: true },
+                    });
+
+                if (!tag) {
+                    return reply
+                        .status(404)
+                        .send({ error: "Tag does not exist" });
+                }
+                if (tag.userId !== userId) {
+                    return reply.status(403).send({
+                        error: "You do not have permission to access this tag",
+                    });
+                }
+
+                const updatedTag: Tag = await prisma.tag.update({
                     where: { id, userId },
                     data: { name },
                 });
-                reply.send(tag);
+                reply.send(updatedTag);
             } catch (error) {
                 if (
                     error instanceof Prisma.PrismaClientKnownRequestError &&
                     error.code === "P2025"
                 ) {
                     // Record not found
-                    return reply.status(404).send({ error: "Tag not found" });
+                    return reply
+                        .status(404)
+                        .send({ error: "Tag does not exist" });
                 }
                 fastify.log.error(error);
                 reply.status(500).send({ error: "Internal Server Error" });
@@ -110,6 +131,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 response: {
                     204: z.undefined(),
                     401: z.object({ error: z.string() }),
+                    403: z.object({ error: z.string() }),
                     404: z.object({ error: z.string() }),
                     500: z.object({ error: z.string() }),
                 },
@@ -122,6 +144,25 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             }
             const { id } = request.params;
             try {
+                const tag: Prisma.TagGetPayload<{ select: { userId: true } }> =
+                    await prisma.tag.findUnique({
+                        where: { id },
+                        select: { userId: true },
+                    });
+
+                if (!tag) {
+                    return reply
+                        .status(404)
+                        .send({ error: "Tag does not exist" });
+                }
+                if (tag.userId !== userId) {
+                    return reply
+                        .status(403)
+                        .send({
+                            error: "You do not have permission to access this tag",
+                        });
+                }
+
                 await prisma.tag.deleteMany({
                     where: { id, userId },
                 });
@@ -132,7 +173,9 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     error.code === "P2025"
                 ) {
                     // Record not found
-                    return reply.status(404).send({ error: "Tag not found" });
+                    return reply
+                        .status(404)
+                        .send({ error: "Tag does not exist" });
                 }
                 fastify.log.error(error);
                 reply.status(500).send({ error: "Internal Server Error" });
