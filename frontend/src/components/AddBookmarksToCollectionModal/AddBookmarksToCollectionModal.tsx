@@ -6,7 +6,7 @@ import {
     Button,
 } from "@mui/material";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router";
 import { useBookmarkSearch } from "../../hooks";
 import { queryClient, bookmarksQuery } from "../../http";
@@ -30,17 +30,21 @@ export default function AddBookmarksToCollectionModal({
     const [searchQuery, setSearchQuery] = useState("");
     const [chosenTags, setChosenTags] = useState<TagRepresentation[]>([]);
     const [selectedBookmarks, setSelectedBookmarks] = useState<number[]>([]);
+    const [prevIsOpen, setPrevIsOpen] = useState<boolean | undefined>(
+        undefined
+    );
 
     const params = useParams();
     const collectionId = Number(params.id);
 
-    useEffect(() => {
-        if (isOpen) {
-            setSelectedBookmarks([]);
-            setSearchQuery("");
-            setChosenTags([]);
-        }
-    }, [isOpen]);
+    if (isOpen && !prevIsOpen) {
+        setPrevIsOpen(true);
+        setSelectedBookmarks([]);
+        setSearchQuery("");
+        setChosenTags([]);
+    } else if (!isOpen && prevIsOpen) {
+        setPrevIsOpen(false);
+    }
 
     const { data: allBookmarks } = useQuery(
         bookmarksQuery({
@@ -48,13 +52,22 @@ export default function AddBookmarksToCollectionModal({
         })
     );
 
-    const { mutate, isPending: bookmarksMutationIsPending } = useMutation({
-        mutationFn: async (bookmarkIds: number[]) => {
+    const {
+        mutate: addBookmarksMutation,
+        isPending: addBookmarksMutationIsPending,
+    } = useMutation({
+        mutationFn: async ({
+            bookmarkIds,
+            collectionId,
+        }: {
+            bookmarkIds: number[];
+            collectionId: number;
+        }) => {
             const response = await fetch(
                 `/api/collections/${collectionId}/bookmarks`,
                 {
                     credentials: "include",
-                    method: "PUT",
+                    method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -98,11 +111,10 @@ export default function AddBookmarksToCollectionModal({
     }, []);
 
     function handleConfirmClick() {
-        const allIds = [
-            ...currentBookmarks.map((bookmark) => bookmark.id),
-            ...selectedBookmarks,
-        ];
-        mutate(allIds);
+        addBookmarksMutation({
+            bookmarkIds: selectedBookmarks,
+            collectionId,
+        });
     }
 
     return (
@@ -141,7 +153,7 @@ export default function AddBookmarksToCollectionModal({
                     Cancel
                 </Button>
                 <Button
-                    disabled={bookmarksMutationIsPending}
+                    disabled={addBookmarksMutationIsPending}
                     color="primary"
                     onClick={handleConfirmClick}
                 >

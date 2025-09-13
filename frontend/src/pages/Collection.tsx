@@ -1,13 +1,12 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Container, Box, List, Paper, Button } from "@mui/material";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams, type LoaderFunctionArgs } from "react-router";
 import AddBookmarksToCollectionModal from "../components/AddBookmarksToCollectionModal";
 import CollectionHeader from "../components/CollectionHeader";
 import RemovableBookmarkListItem from "../components/RemovableBookmarkListItem";
 import { queryClient, collectionQuery } from "../http";
-import { showErrorSnackbar, showSuccessSnackbar } from "../snackbarStore";
 
 export default function CollectionPage() {
     const params = useParams();
@@ -22,38 +21,6 @@ export default function CollectionPage() {
             shouldShowSnackbar: true,
         })
     );
-
-    const { mutate } = useMutation({
-        mutationFn: async (bookmarkIds: number[]) => {
-            const response = await fetch(`/api/collections/${id}/bookmarks`, {
-                credentials: "include",
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ bookmarkIds }),
-            });
-            if (!response.ok) {
-                throw new Error("Failed to remove bookmark from collection");
-            }
-        },
-        onSuccess: () => {
-            console.log("Bookmark successfully removed");
-            queryClient.invalidateQueries({ queryKey: ["collections"] });
-            showSuccessSnackbar("Bookmark removed");
-        },
-        onError: () => {
-            showErrorSnackbar("Failed to remove bookmark");
-        },
-    });
-
-    function handleRemoveBookmark(bookmarkId: number) {
-        const bookmarks = collectionData?.bookmarks ?? [];
-        const updatedBookmarkIds = bookmarks
-            .map((bookmark) => bookmark.id)
-            .filter((id) => id !== bookmarkId);
-        mutate(updatedBookmarkIds);
-    }
 
     if (!collectionData) {
         return null;
@@ -98,9 +65,7 @@ export default function CollectionPage() {
                             key={bookmark.id}
                             bookmark={bookmark}
                             includeBorder={index !== 0}
-                            handleRemoveClick={() =>
-                                handleRemoveBookmark(bookmark.id)
-                            }
+                            collectionId={id}
                         />
                     ))}
                 </List>
