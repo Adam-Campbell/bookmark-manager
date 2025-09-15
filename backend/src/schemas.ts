@@ -67,3 +67,7 @@ export const BookmarkWithIndexSchema = BookmarkSchema.extend({
 export const CollectionWithBookmarksSchema = CollectionSchema.extend({
     bookmarks: z.array(BookmarkWithIndexSchema),
 });
+
+export const ErrorResponseSchema = z.object({
+    error: z.string(),
+});

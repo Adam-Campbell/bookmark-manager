@@ -1,5 +1,5 @@
 import "fastify";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/index.js";
 
 declare module "fastify" {
     // prisma added by prisma.ts plugin

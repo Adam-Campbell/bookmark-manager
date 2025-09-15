@@ -1,10 +1,11 @@
 import { FastifyPluginAsync } from "fastify";
-import { Prisma, Bookmark, Collection } from "../../generated/prisma/index.js";
-import { type FastifyZod } from "../../types/index.ts";
 import { z } from "zod";
+import { Prisma, Collection } from "../../generated/prisma/index.js";
+import { type FastifyZod } from "../../types/index.ts";
 import {
     CollectionWithBookmarkCountSchema,
     CollectionWithBookmarksSchema,
+    ErrorResponseSchema,
 } from "../schemas.ts";
 import bookmarksInCollectionRoutes from "./bookmarksInCollectionRoutes.ts";
 
@@ -18,7 +19,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             schema: {
                 response: {
                     200: z.array(CollectionWithBookmarkCountSchema),
-                    401: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
                 },
             },
         },
@@ -27,26 +28,16 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
-            type CollectionWithCount = Prisma.CollectionGetPayload<{
+            const collections = await prisma.collection.findMany({
+                where: { userId },
                 include: {
                     _count: {
                         select: {
-                            bookmarks: true;
-                        };
-                    };
-                };
-            }>;
-            const collections: CollectionWithCount[] =
-                await prisma.collection.findMany({
-                    where: { userId },
-                    include: {
-                        _count: {
-                            select: {
-                                bookmarks: true,
-                            },
+                            bookmarks: true,
                         },
                     },
-                });
+                },
+            });
             type CollectionWithBookmarkCount = Collection & {
                 bookmarkCount: number;
             };
@@ -73,9 +64,9 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 }),
                 response: {
                     200: CollectionWithBookmarksSchema,
-                    401: z.object({ error: z.string() }),
-                    403: z.object({ error: z.string() }),
-                    404: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
+                    403: ErrorResponseSchema,
+                    404: ErrorResponseSchema,
                 },
             },
         },
@@ -102,20 +93,22 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             if (!collection) {
                 return reply
                     .status(404)
-                    .send({ error: "Collection not found" });
+                    .send({ error: "Collection does not exist" });
             }
             if (collection.userId !== userId) {
                 return reply.status(403).send({
                     error: "You do not have permission to access this collection",
                 });
             }
-            collection.bookmarks = collection.bookmarks.map(
-                (bic: { bookmarkIndex: number; bookmark: Bookmark }) => ({
+
+            const formattedCollection = {
+                ...collection,
+                bookmarks: collection.bookmarks.map((bic) => ({
                     ...bic.bookmark,
                     bookmarkIndex: bic.bookmarkIndex,
-                })
-            );
-            reply.send(collection);
+                })),
+            };
+            reply.send(formattedCollection);
         }
     );
 
@@ -130,7 +123,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 }),
                 response: {
                     200: CollectionWithBookmarksSchema,
-                    401: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
                 },
             },
         },
@@ -141,12 +134,19 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             }
             const { title, description } = request.body;
             const collection = await prisma.collection.create({
-                data: { title, description, userId },
+                data: {
+                    title,
+                    description: description ?? "",
+                    userId,
+                },
             });
             // There are no bookmarks in a new collection, but we add the empty array to give
             // it a consistent shape.
-            collection.bookmarks = [];
-            reply.send(collection);
+            const formattedCollection = {
+                ...collection,
+                bookmarks: [],
+            };
+            reply.send(formattedCollection);
         }
     );
 
@@ -164,9 +164,10 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 }),
                 response: {
                     200: CollectionWithBookmarksSchema,
-                    401: z.object({ error: z.string() }),
-                    404: z.object({ error: z.string() }),
-                    500: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
+                    403: ErrorResponseSchema,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
                 },
             },
         },
@@ -177,9 +178,23 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             }
             const { id } = request.params;
             const { title } = request.body;
-            const description = request.body.description || "";
+            const description = request.body.description ?? "";
+
+            const collection = await prisma.collection.findUnique({
+                where: { id },
+            });
+            if (!collection) {
+                return reply
+                    .status(404)
+                    .send({ error: "Collection does not exist" });
+            }
+            if (collection.userId !== userId) {
+                return reply.status(403).send({
+                    error: "You do not have permission to access this collection",
+                });
+            }
             try {
-                const collection = await prisma.collection.update({
+                const updatedCollection = await prisma.collection.update({
                     where: { id, userId },
                     data: { title, description },
                     include: {
@@ -194,13 +209,16 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                         },
                     },
                 });
-                collection.bookmarks = collection.bookmarks.map(
-                    (bic: { bookmarkIndex: number; bookmark: Bookmark }) => ({
+
+                const formattedUpdatedCollection = {
+                    ...updatedCollection,
+                    bookmarks: updatedCollection.bookmarks.map((bic) => ({
                         ...bic.bookmark,
                         bookmarkIndex: bic.bookmarkIndex,
-                    })
-                );
-                reply.send(collection);
+                    })),
+                };
+
+                reply.send(formattedUpdatedCollection);
             } catch (error) {
                 if (
                     error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -209,7 +227,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     // Record not found
                     return reply
                         .status(404)
-                        .send({ error: "Collection not found" });
+                        .send({ error: "Collection does not exist" });
                 }
                 fastify.log.error(error);
                 return reply
@@ -229,9 +247,10 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 }),
                 response: {
                     204: z.undefined(),
-                    401: z.object({ error: z.string() }),
-                    404: z.object({ error: z.string() }),
-                    500: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
+                    403: ErrorResponseSchema,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
                 },
             },
         },
@@ -241,6 +260,20 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 return reply.status(401).send({ error: "Unauthorized" });
             }
             const { id } = request.params;
+
+            const collection = await prisma.collection.findUnique({
+                where: { id },
+            });
+            if (!collection) {
+                return reply
+                    .status(404)
+                    .send({ error: "Collection does not exist" });
+            }
+            if (collection.userId !== userId) {
+                return reply.status(403).send({
+                    error: "You do not have permission to access this collection",
+                });
+            }
             try {
                 await prisma.collection.delete({
                     where: { id, userId },
@@ -254,7 +287,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     // Record not found
                     return reply
                         .status(404)
-                        .send({ error: "Collection not found" });
+                        .send({ error: "Collection does not exist" });
                 }
                 fastify.log.error(error);
                 return reply

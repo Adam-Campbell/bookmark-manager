@@ -1,17 +1,23 @@
-import { FastifyPluginAsync, FastifyRequest } from "fastify";
-import { Prisma, Tag, PrismaClient } from "../../generated/prisma/index.js";
+import { FastifyPluginAsync } from "fastify";
+import { z } from "zod";
+import { Prisma, PrismaClient } from "../../generated/prisma/index.js";
 import { type FastifyZod } from "../../types/index.ts";
 import {
     BookmarkBodySchema,
     BookmarkSchema,
     BookmarkWithCollectionsSchema,
+    ErrorResponseSchema,
 } from "../schemas.ts";
-import { z } from "zod";
 
 type TagData = {
     id: number | null;
     name: string;
 };
+
+type TransactionClient = Omit<
+    PrismaClient,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+>;
 
 /**
  * Takes in a potentially mixed list of pre-existing and new tags, handles tag creation for any new
@@ -24,33 +30,32 @@ type TagData = {
 async function createAndFormatTags(
     tagsData: TagData[],
     userId: string,
-    prismaInstance: PrismaClient
+    prismaInstance: TransactionClient
 ): Promise<{ id: number }[]> {
     // Sort tags into existing (has an id) and new (id is null)
-    const existingTags: { id: number }[] = tagsData
+    const existingTagIds: number[] = tagsData
         .filter((tag) => tag.id !== null)
-        .map((tag) => ({ id: tag.id as number }));
-    const newTags = tagsData
+        .map((tag) => tag.id as number);
+    const newTagNames = tagsData
         .filter((tag) => tag.id === null)
-        .map((tag) => ({
-            name: tag.name,
-        }));
+        .map((tag) => tag.name);
 
     // Create new tags in the database
-    const createdTags: Tag[] = await Promise.all(
-        newTags.map((tag) =>
+    const createdTagIds = await Promise.all(
+        newTagNames.map((name) =>
             prismaInstance.tag.upsert({
                 where: {
                     name_userId: {
-                        name: tag.name,
+                        name,
                         userId,
                     },
                 },
                 update: {},
                 create: {
-                    name: tag.name,
+                    name,
                     userId,
                 },
+                select: { id: true },
             })
         )
     );
@@ -62,17 +67,17 @@ async function createAndFormatTags(
         where: {
             userId,
             id: {
-                in: existingTags.map((tag) => tag.id),
+                in: existingTagIds,
             },
         },
         select: { id: true },
     });
     // Merge and return
-    const allTags = [
-        ...validExistingTags,
-        ...createdTags.map((tag) => ({ id: tag.id })),
-    ];
-    return allTags;
+    const allTags = [...validExistingTags, ...createdTagIds];
+    const dedupedTags = Array.from(
+        new Map(allTags.map((tag) => [tag.id, tag])).values()
+    );
+    return dedupedTags;
 }
 
 const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
@@ -85,11 +90,11 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             schema: {
                 response: {
                     200: z.array(BookmarkSchema),
-                    401: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
                 },
             },
         },
-        async (request: FastifyRequest, reply) => {
+        async (request, reply) => {
             const userId = request.user?.id;
             if (!userId) {
                 return reply.status(401).send({ error: "Unauthorized" });
@@ -114,8 +119,9 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 }),
                 response: {
                     200: BookmarkSchema,
-                    401: z.object({ error: z.string() }),
-                    404: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
+                    403: ErrorResponseSchema,
+                    404: ErrorResponseSchema,
                 },
             },
         },
@@ -126,13 +132,20 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             }
             const { id } = request.params;
             const bookmark = await prisma.bookmark.findUnique({
-                where: { id, userId },
+                where: { id },
                 include: {
                     tags: true,
                 },
             });
             if (!bookmark) {
-                return reply.status(404).send({ error: "Bookmark not found" });
+                return reply
+                    .status(404)
+                    .send({ error: "Bookmark does not exist" });
+            }
+            if (bookmark.userId !== userId) {
+                return reply.status(403).send({
+                    error: "You are not authorised to access this bookmark",
+                });
             }
             reply.send(bookmark);
         }
@@ -146,7 +159,8 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 body: BookmarkBodySchema,
                 response: {
                     200: BookmarkWithCollectionsSchema,
-                    401: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
                 },
             },
         },
@@ -159,23 +173,45 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             let tags = request.body.tags || [];
             let collections = request.body.collections || [];
 
-            const allTags = await createAndFormatTags(tags, userId, prisma);
-            const bookmark = await prisma.bookmark.create({
-                data: {
-                    title,
-                    url,
-                    userId,
-                    description,
-                    tags: {
-                        connect: allTags,
-                    },
-                },
-                include: {
-                    tags: true,
-                    collections: true,
-                },
-            });
-            reply.send(bookmark);
+            try {
+                const createdBookmark = await prisma.$transaction(
+                    async (tx) => {
+                        const allTags = await createAndFormatTags(
+                            tags,
+                            userId,
+                            tx
+                        );
+                        const bookmark = await tx.bookmark.create({
+                            data: {
+                                title,
+                                url,
+                                userId,
+                                description: description ?? "",
+                                tags: {
+                                    connect: allTags,
+                                },
+                            },
+                            include: {
+                                tags: true,
+                                collections: {
+                                    include: { collection: true },
+                                },
+                            },
+                        });
+                        const formattedBookmark = {
+                            ...bookmark,
+                            collections: bookmark.collections.map(
+                                (c) => c.collection
+                            ),
+                        };
+                        return formattedBookmark;
+                    }
+                );
+                reply.send(createdBookmark);
+            } catch (error) {
+                fastify.log.error(error);
+                reply.status(500).send({ error: "Internal Server Error" });
+            }
         }
     );
 
@@ -190,9 +226,10 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 body: BookmarkBodySchema,
                 response: {
                     200: BookmarkSchema,
-                    401: z.object({ error: z.string() }),
-                    404: z.object({ error: z.string() }),
-                    500: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
+                    403: ErrorResponseSchema,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
                 },
             },
         },
@@ -206,24 +243,43 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             let tags = request.body.tags || [];
             let collections = request.body.collections || [];
 
+            const bookmark = await prisma.bookmark.findUnique({
+                where: { id },
+            });
+            if (!bookmark) {
+                return reply
+                    .status(404)
+                    .send({ error: "Bookmark does not exist" });
+            }
+            if (bookmark.userId !== userId) {
+                return reply.status(403).send({
+                    error: "You do not have permission to access this bookmark",
+                });
+            }
+
             // Handle tags
             const allTags = await createAndFormatTags(tags, userId, prisma);
             try {
-                const bookmark = await prisma.bookmark.update({
-                    where: { id, userId },
-                    data: {
-                        title,
-                        url,
-                        description,
-                        tags: {
-                            set: allTags,
-                        },
-                    },
-                    include: {
-                        tags: true,
-                    },
-                });
-                reply.send(bookmark);
+                const updatedBookmark = await prisma.$transaction(
+                    async (tx) => {
+                        const bookmark = await tx.bookmark.update({
+                            where: { id, userId },
+                            data: {
+                                title,
+                                url,
+                                description,
+                                tags: {
+                                    set: allTags,
+                                },
+                            },
+                            include: {
+                                tags: true,
+                            },
+                        });
+                        return bookmark;
+                    }
+                );
+                reply.send(updatedBookmark);
             } catch (error) {
                 if (
                     error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -250,10 +306,10 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 }),
                 response: {
                     204: z.undefined(),
-                    401: z.object({ error: z.string() }),
-                    403: z.object({ error: z.string() }),
-                    404: z.object({ error: z.string() }),
-                    500: z.object({ error: z.string() }),
+                    401: ErrorResponseSchema,
+                    403: ErrorResponseSchema,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
                 },
             },
         },
@@ -268,17 +324,17 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                 select: { userId: true },
             });
             if (!bookmark) {
-                return reply.status(404).send({ error: "Bookmark not found" });
+                return reply
+                    .status(404)
+                    .send({ error: "Bookmark does not exist" });
             }
             if (bookmark.userId !== userId) {
-                return reply
-                    .status(403)
-                    .send({
-                        error: "You are not authorised to access this bookmark",
-                    });
+                return reply.status(403).send({
+                    error: "You are not authorised to access this bookmark",
+                });
             }
             try {
-                await prisma.$transaction(async (tx: PrismaClient) => {
+                await prisma.$transaction(async (tx) => {
                     const collectionInclusions =
                         await tx.bookmarksInCollections.findMany({
                             where: {
@@ -311,7 +367,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                     // Record not found
                     return reply
                         .status(404)
-                        .send({ error: "Bookmark not found" });
+                        .send({ error: "Bookmark does not exist" });
                 }
                 fastify.log.error(error);
                 reply.status(500).send({ error: "Internal Server Error" });
