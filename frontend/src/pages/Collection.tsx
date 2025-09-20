@@ -1,11 +1,11 @@
 import AddIcon from "@mui/icons-material/Add";
-import { Container, Box, List, Paper, Button } from "@mui/material";
+import { Container, Box, Button } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams, type LoaderFunctionArgs } from "react-router";
 import AddBookmarksToCollectionModal from "../components/AddBookmarksToCollectionModal";
+import CollectionBookmarkList from "../components/CollectionBookmarkList";
 import CollectionHeader from "../components/CollectionHeader";
-import RemovableBookmarkListItem from "../components/RemovableBookmarkListItem";
 import { queryClient, collectionQuery } from "../http";
 
 export default function CollectionPage() {
@@ -58,18 +58,11 @@ export default function CollectionPage() {
                 isOpen={addBookmarksModalIsOpen}
                 onClose={() => setAddBookmarksModalIsOpen(false)}
             />
-            <Paper variant="outlined">
-                <List>
-                    {collectionData.bookmarks.map((bookmark, index) => (
-                        <RemovableBookmarkListItem
-                            key={bookmark.id}
-                            bookmark={bookmark}
-                            includeBorder={index !== 0}
-                            collectionId={id}
-                        />
-                    ))}
-                </List>
-            </Paper>
+
+            <CollectionBookmarkList
+                id={id}
+                bookmarks={collectionData.bookmarks}
+            />
         </Container>
     );
 }

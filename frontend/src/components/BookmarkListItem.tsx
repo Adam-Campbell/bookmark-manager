@@ -9,6 +9,7 @@ type BookmarkListItemProps = {
     controls?: React.ReactNode;
     ref?: (element: HTMLElement | null) => void;
     dataIndex?: number;
+    styles?: React.CSSProperties;
 };
 
 export default function BookmarkListItem({
@@ -18,6 +19,7 @@ export default function BookmarkListItem({
     controls,
     ref,
     dataIndex,
+    styles,
 }: BookmarkListItemProps) {
     const { title, url, description, tags } = bookmark;
 
@@ -27,6 +29,7 @@ export default function BookmarkListItem({
                 ref={ref}
                 data-index={dataIndex}
                 sx={{
+                    bgcolor: (theme) => theme.palette.background.paper,
                     flexDirection: "column",
                     alignItems: "flex-start",
                     width: "100%",
@@ -35,6 +38,7 @@ export default function BookmarkListItem({
                             ? `1px solid ${theme.palette.divider}`
                             : "none",
                 }}
+                style={styles}
             >
                 <Box display="flex" alignItems="center" width="100%">
                     <Typography

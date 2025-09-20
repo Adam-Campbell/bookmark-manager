@@ -1,21 +1,26 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { IconButton } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "../http";
-import { showErrorSnackbar, showSuccessSnackbar } from "../snackbarStore";
-import { type Bookmark } from "../types";
-import BookmarkListItem from "./BookmarkListItem";
+import { queryClient } from "../../http";
+import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
+import { type Bookmark } from "../../types";
+import BookmarkListItem from "../BookmarkListItem";
 
 type RemovableBookmarkListItemProps = {
     bookmark: Bookmark;
     collectionId: number;
     includeBorder?: boolean;
+    isDragging: boolean;
 };
 
 export default function RemovableBookmarkListItem({
     bookmark,
     collectionId,
     includeBorder,
+    isDragging,
 }: RemovableBookmarkListItemProps) {
     const { mutate: removeBookmarkMutation } = useMutation({
         mutationFn: async ({
@@ -45,6 +50,16 @@ export default function RemovableBookmarkListItem({
         },
     });
 
+    const { attributes, listeners, setNodeRef, transform, transition } =
+        useSortable({ id: bookmark.id });
+
+    const style: React.CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 1200 : "auto",
+        position: isDragging ? "relative" : "static",
+    };
+
     function handleRemoveClick() {
         removeBookmarkMutation({
             bookmarkId: bookmark.id,
@@ -58,10 +73,17 @@ export default function RemovableBookmarkListItem({
             includeBorder={includeBorder}
             showFullDetail={true}
             controls={
-                <IconButton onClick={handleRemoveClick}>
-                    <RemoveCircleIcon />
-                </IconButton>
+                <>
+                    <IconButton onClick={handleRemoveClick}>
+                        <RemoveCircleIcon />
+                    </IconButton>
+                    <IconButton {...attributes} {...listeners}>
+                        <DragIndicatorIcon />
+                    </IconButton>
+                </>
             }
+            styles={style}
+            ref={setNodeRef}
         />
     );
 }
