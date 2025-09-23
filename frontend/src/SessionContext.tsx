@@ -49,6 +49,11 @@ export const SessionProvider = ({
             name,
         });
         if (error) {
+            if (error.code === "USER_ALREADY_EXISTS") {
+                throw new Error(
+                    "An account with this email address already exists"
+                );
+            }
             console.warn(error);
             return;
         }
@@ -65,8 +70,12 @@ export const SessionProvider = ({
             password,
         });
         if (error) {
-            console.warn(error);
-            return;
+            if (error.code === "INVALID_EMAIL_OR_PASSWORD") {
+                throw new Error("The provided email or password is incorrect");
+            } else {
+                console.warn(error);
+                throw new Error("An unexpected error occurred");
+            }
         }
         setData({
             token: data.token,
