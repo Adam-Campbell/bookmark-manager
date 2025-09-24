@@ -3,16 +3,18 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    TextField,
     Button,
     Typography,
 } from "@mui/material";
+import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { z } from "zod";
 import { authClient } from "../../authClient";
 import { queryClient } from "../../http";
 import { useSession } from "../../SessionContext";
 import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
+import FormTextField from "../FormTextField";
 
 type DeleteAccountModalProps = {
     isOpen: boolean;
@@ -23,39 +25,61 @@ export function DeleteAccountModal({
     isOpen,
     onClose,
 }: DeleteAccountModalProps) {
-    const [password, setPassword] = useState("");
     const [prevIsOpen, setPrevIsOpen] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
     const { setSessionData } = useSession();
 
+    const form = useForm({
+        defaultValues: {
+            password: "",
+        },
+        validators: {
+            onChange: z.object({
+                password: z.string().min(1, "Please enter your password"),
+            }),
+        },
+        onSubmit: async ({ value, formApi }) => {
+            const { password } = value;
+            console.log(password);
+            const response: any = await authClient.deleteUser({
+                password,
+            });
+            if (response?.error !== null) {
+                if (response?.error?.code === "INVALID_PASSWORD") {
+                    formApi.setFieldMeta("password", (meta) => ({
+                        ...meta,
+                        errorMap: {
+                            onChange: [
+                                {
+                                    message:
+                                        "The password provided was incorrect",
+                                },
+                            ],
+                        },
+                    }));
+                } else {
+                    showErrorSnackbar("Failed to delete account");
+                }
+                return;
+            }
+            setSessionData({ token: null, user: null });
+            queryClient.clear();
+            navigate("/sign-up");
+            showSuccessSnackbar("Account deleted");
+        },
+    });
+
     if (isOpen === true && prevIsOpen === false) {
         setPrevIsOpen(true);
-        setPassword("");
-        setErrorMessage("");
+        form.reset();
     } else if (isOpen === false && prevIsOpen === true) {
         setPrevIsOpen(false);
     }
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        console.log("Deleting account...");
-        const response: any = await authClient.deleteUser({
-            password,
-        });
-        console.log(response);
-        if (response?.error !== null) {
-            if (response?.error?.code === "INVALID_PASSWORD") {
-                setErrorMessage("Password is incorrect.");
-            } else {
-                showErrorSnackbar("Failed to delete account");
-            }
-            return;
-        }
-        setSessionData({ token: null, user: null });
-        queryClient.clear();
-        navigate("/sign-up");
-        showSuccessSnackbar("Account deleted");
+        e.stopPropagation();
+        form.handleSubmit();
     }
 
     return (
@@ -73,18 +97,16 @@ export function DeleteAccountModal({
                         Please note that this action cannot be undone. If you
                         wish to proceed, please enter your password below.
                     </Typography>
-                    <TextField
-                        fullWidth
-                        variant="filled"
-                        margin="dense"
-                        label="Password"
-                        type="password"
-                        id="password"
+                    <form.Field
                         name="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        error={errorMessage !== ""}
-                        helperText={errorMessage}
+                        children={(field) => (
+                            <FormTextField
+                                field={field}
+                                label="Password"
+                                type="password"
+                                shouldAutoFocus
+                            />
+                        )}
                     />
                 </form>
             </DialogContent>
@@ -92,13 +114,19 @@ export function DeleteAccountModal({
                 <Button color="secondary" onClick={onClose}>
                     Cancel
                 </Button>
-                <Button
-                    color="primary"
-                    type="submit"
-                    form="account-deletion-confirmation-form"
-                >
-                    Delete Account
-                </Button>
+                <form.Subscribe
+                    selector={(state) => state.isSubmitting}
+                    children={(isSubmitting) => (
+                        <Button
+                            color="primary"
+                            type="submit"
+                            form="account-deletion-confirmation-form"
+                            disabled={isSubmitting}
+                        >
+                            Delete Account
+                        </Button>
+                    )}
+                />
             </DialogActions>
         </Dialog>
     );
