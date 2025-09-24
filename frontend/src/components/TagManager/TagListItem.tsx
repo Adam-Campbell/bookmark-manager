@@ -51,7 +51,7 @@ export function TagListItem({ name, id, includeBorder }: TagListItemProps) {
         },
     });
 
-    const { mutate: editMutation, variables: editVariables } = useMutation({
+    const { mutateAsync: editMutation } = useMutation({
         mutationFn: async ({ id, name }: { id: number; name: string }) => {
             const response = await fetch(`/api/tags/${id}`, {
                 method: "PATCH",
@@ -65,18 +65,33 @@ export function TagListItem({ name, id, includeBorder }: TagListItemProps) {
                 throw new Error("Failed to update tag");
             }
         },
+        onMutate: async ({ id, name }: { id: number; name: string }) => {
+            await queryClient.cancelQueries({ queryKey: ["tags"] });
+            const previousTags: Tag[] | undefined = queryClient.getQueryData([
+                "tags",
+            ]);
+            queryClient.setQueryData(
+                ["tags"],
+                previousTags?.map((tag) => ({
+                    id: tag.id,
+                    name: tag.id === id ? name : tag.name,
+                }))
+            );
+            return { previousTags };
+        },
         onSuccess: () => {
+            showSuccessSnackbar("Tag updated");
+        },
+        onError: (_error, _variables, context) => {
+            queryClient.setQueryData(["tags"], context?.previousTags);
+            showErrorSnackbar("Failed to update tag");
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["tags"] });
             queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
             queryClient.invalidateQueries({ queryKey: ["collections"] });
-            showSuccessSnackbar("Tag updated");
-        },
-        onError: () => {
-            showErrorSnackbar("Failed to update tag");
         },
     });
-
-    const nameToDisplay = editVariables?.name ?? name;
 
     return (
         <ListItem
@@ -101,7 +116,7 @@ export function TagListItem({ name, id, includeBorder }: TagListItemProps) {
                 />
             ) : (
                 <TagListItemDisplay
-                    name={nameToDisplay}
+                    name={name}
                     onDelete={() => deleteMutation(id)}
                     onEditClick={() => setIsEditing(true)}
                 />
