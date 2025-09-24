@@ -1,19 +1,18 @@
 import {
     Container,
     Paper,
-    TextField,
     Button,
     Typography,
     Link,
     Stack,
     Alert,
 } from "@mui/material";
+import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Link as RouterLink, Navigate } from "react-router";
-import { useSession } from "../SessionContext";
-import { useForm, type AnyFieldApi } from "@tanstack/react-form";
 import { z } from "zod";
-import type React from "react";
+import FormTextField from "../components/FormTextField";
+import { useSession } from "../SessionContext";
 
 const SignInSchema = z.object({
     email: z.email("Please enter your email address"),
@@ -24,14 +23,6 @@ const signInDefaultValues = {
     email: "",
     password: "",
 };
-
-function fieldHasErrors(field: AnyFieldApi): boolean {
-    return field.state.meta.isTouched && !field.state.meta.isValid;
-}
-
-function getFieldErrors(field: AnyFieldApi): string | null {
-    return fieldHasErrors(field) ? field.state.meta.errors[0].message : null;
-}
 
 export default function SignInPage() {
     const { signIn, isLoggedIn } = useSession();
@@ -85,43 +76,24 @@ export default function SignInPage() {
                     <form.Field
                         name="email"
                         children={(field) => (
-                            <TextField
-                                autoFocus
-                                margin="dense"
+                            <FormTextField
+                                field={field}
                                 label="Email"
                                 type="email"
-                                fullWidth
-                                variant="filled"
-                                name="email"
-                                value={field.state.value}
-                                onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                }
-                                error={fieldHasErrors(field)}
-                                helperText={getFieldErrors(field)}
+                                shouldAutoFocus
                             />
                         )}
                     />
                     <form.Field
                         name="password"
                         children={(field) => (
-                            <TextField
-                                margin="dense"
+                            <FormTextField
+                                field={field}
                                 label="Password"
                                 type="password"
-                                fullWidth
-                                variant="filled"
-                                name="password"
-                                value={field.state.value}
-                                onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                }
-                                error={fieldHasErrors(field)}
-                                helperText={getFieldErrors(field)}
                             />
                         )}
                     />
-
                     <Typography variant="body2" sx={{ mt: 2 }}>
                         Don't have an account?{" "}
                         <Link

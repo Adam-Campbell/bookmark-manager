@@ -8,6 +8,7 @@ type FormTextFieldProps = {
     type?: string;
     shouldAutoFocus?: boolean;
     isTextArea?: boolean;
+    helperText?: string;
 };
 
 export default function FormTextField({
@@ -16,6 +17,7 @@ export default function FormTextField({
     type = "text",
     shouldAutoFocus,
     isTextArea,
+    helperText,
 }: FormTextFieldProps) {
     return (
         <TextField
@@ -28,7 +30,7 @@ export default function FormTextField({
             value={field.state.value}
             onChange={(e) => field.handleChange(e.target.value)}
             error={fieldHasErrors(field)}
-            helperText={getFieldErrors(field)}
+            helperText={helperText || getFieldErrors(field)}
             autoFocus={shouldAutoFocus}
             multiline={isTextArea}
             rows={isTextArea ? 4 : 1}
