@@ -4,12 +4,40 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    TextField,
 } from "@mui/material";
+import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
+import { z } from "zod";
 import { authClient } from "../../authClient";
 import { useSession } from "../../SessionContext";
 import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
+import { fieldHasErrors } from "../../utils";
+import FormTextField from "../FormTextField";
+import PasswordErrorList from "../PasswordErrorList";
+
+const ChangePasswordSchema = z
+    .object({
+        currentPassword: z
+            .string()
+            .min(1, "Please enter your current password"),
+        newPassword: z
+            .string()
+            .min(8, "Password must contain at least 8 characters")
+            .refine((val) => /[A-Z]/.test(val), {
+                message: "Password must contain an uppercase character",
+            })
+            .refine((val) => /[0-9]/.test(val), {
+                message: "Password must contain a number",
+            })
+            .refine((val) => /[^A-Za-z0-9]/.test(val), {
+                message: "Password must contain a special character",
+            }),
+        confirmNewPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmNewPassword, {
+        path: ["confirmNewPassword"],
+        message: "Passwords do not match",
+    });
 
 type ChangePasswordModalProps = {
     isOpen: boolean;
@@ -20,80 +48,93 @@ export function ChangePasswordModal({
     isOpen,
     onClose,
 }: ChangePasswordModalProps) {
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const { setSessionData } = useSession();
     const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
+    const form = useForm({
+        defaultValues: {
+            currentPassword: "",
+            newPassword: "",
+            confirmNewPassword: "",
+        },
+        validators: {
+            onChange: ChangePasswordSchema,
+        },
+        onSubmit: async ({ value }) => {
+            const { currentPassword, newPassword } = value;
+            const { data, error } = await authClient.changePassword({
+                currentPassword,
+                newPassword,
+                revokeOtherSessions: true,
+            });
+            if (error) {
+                showErrorSnackbar("Failed to update password");
+                return;
+            }
+            setSessionData(data);
+            onClose();
+            showSuccessSnackbar("Password updated");
+        },
+    });
+
     if (isOpen === true && prevIsOpen === false) {
         setPrevIsOpen(true);
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmNewPassword("");
+        form.reset();
     } else if (isOpen === false && prevIsOpen === true) {
         setPrevIsOpen(false);
     }
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        const { data, error } = await authClient.changePassword({
-            currentPassword,
-            newPassword,
-            revokeOtherSessions: true,
-        });
-        if (error) {
-            showErrorSnackbar("Failed to update password");
-            return;
-        }
-        setSessionData(data);
-        onClose();
-        showSuccessSnackbar("Password updated");
+        e.stopPropagation();
+        form.handleSubmit();
     }
-
-    const isDisabled =
-        currentPassword === "" ||
-        newPassword === "" ||
-        newPassword === currentPassword ||
-        newPassword !== confirmNewPassword;
 
     return (
         <Dialog open={isOpen} onClose={onClose} closeAfterTransition={false}>
             <DialogTitle>Change Password</DialogTitle>
             <DialogContent>
                 <form id="change-password-form" onSubmit={handleSubmit}>
-                    <TextField
-                        fullWidth
-                        variant="filled"
-                        margin="dense"
-                        label="Current Password"
-                        type="password"
-                        id="current-password"
+                    <form.Field
                         name="currentPassword"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        children={(field) => (
+                            <FormTextField
+                                field={field}
+                                label="Current Password"
+                                type="password"
+                                shouldAutoFocus
+                            />
+                        )}
                     />
-                    <TextField
-                        fullWidth
-                        variant="filled"
-                        margin="dense"
-                        label="New Password"
-                        type="password"
-                        id="new-password"
+                    <form.Field
                         name="newPassword"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        children={(field) => (
+                            <>
+                                <FormTextField
+                                    field={field}
+                                    label="New Password"
+                                    type="password"
+                                    helperText={
+                                        fieldHasErrors(field)
+                                            ? "Please create a password that meets all requirements below"
+                                            : ""
+                                    }
+                                />
+                                <PasswordErrorList
+                                    password={field.state.value}
+                                />
+                            </>
+                        )}
                     />
-                    <TextField
-                        fullWidth
-                        variant="filled"
-                        margin="dense"
-                        label="Confirm New Password"
-                        type="password"
-                        id="confirm-new-password"
+                    <form.Field
                         name="confirmNewPassword"
-                        value={confirmNewPassword}
-                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        children={(field) => (
+                            <FormTextField
+                                field={field}
+                                label="Confirm New Password"
+                                type="password"
+                            />
+                        )}
                     />
                 </form>
             </DialogContent>
@@ -101,14 +142,19 @@ export function ChangePasswordModal({
                 <Button color="secondary" onClick={onClose}>
                     Cancel
                 </Button>
-                <Button
-                    color="primary"
-                    type="submit"
-                    form="change-password-form"
-                    disabled={isDisabled}
-                >
-                    Change Password
-                </Button>
+                <form.Subscribe
+                    selector={(state) => state.isSubmitting}
+                    children={(isSubmitting) => (
+                        <Button
+                            color="primary"
+                            type="submit"
+                            form="change-password-form"
+                            disabled={isSubmitting}
+                        >
+                            Change Password
+                        </Button>
+                    )}
+                />
             </DialogActions>
         </Dialog>
     );
