@@ -104,13 +104,19 @@ export default function SignInPage() {
                             Sign Up
                         </Link>
                     </Typography>
-                    <Button
-                        sx={{ marginLeft: "auto" }}
-                        variant="contained"
-                        type="submit"
-                    >
-                        Sign In
-                    </Button>
+                    <form.Subscribe
+                        selector={(state) => state.isSubmitting}
+                        children={(isSubmitting) => (
+                            <Button
+                                sx={{ marginLeft: "auto" }}
+                                variant="contained"
+                                type="submit"
+                                disabled={isSubmitting}
+                            >
+                                Sign In
+                            </Button>
+                        )}
+                    />
                 </Stack>
             </Paper>
         </Container>

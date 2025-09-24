@@ -67,7 +67,7 @@ export function BookmarkEditModal({
         undefined
     );
 
-    const { mutate: editBookmarkMutation } = useMutation({
+    const { mutateAsync: editBookmarkMutation } = useMutation({
         mutationFn: async ({
             title,
             description,
@@ -107,7 +107,7 @@ export function BookmarkEditModal({
         },
         onSubmit: async ({ value }) => {
             const { title, url, description, tags } = value;
-            editBookmarkMutation({ title, url, description, tags });
+            await editBookmarkMutation({ title, url, description, tags });
         },
     });
 
@@ -174,23 +174,39 @@ export function BookmarkEditModal({
                 </form>
             </DialogContent>
             <DialogActions>
-                <Button
-                    color="primary"
-                    variant="outlined"
-                    sx={{ mr: "auto" }}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        form.reset();
-                    }}
-                >
-                    Reset
-                </Button>
+                <form.Subscribe
+                    selector={(state) => state.isSubmitting}
+                    children={(isSubmitting) => (
+                        <Button
+                            color="primary"
+                            variant="outlined"
+                            sx={{ mr: "auto" }}
+                            disabled={isSubmitting}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                form.reset();
+                            }}
+                        >
+                            Reset
+                        </Button>
+                    )}
+                />
+
                 <Button color="secondary" onClick={onClose}>
                     Cancel
                 </Button>
-                <Button form={`edit-bookmark-${bookmark.id}`} type="submit">
-                    Save
-                </Button>
+                <form.Subscribe
+                    selector={(state) => state.isSubmitting}
+                    children={(isSubmitting) => (
+                        <Button
+                            form={`edit-bookmark-${bookmark.id}`}
+                            type="submit"
+                            disabled={isSubmitting}
+                        >
+                            Save
+                        </Button>
+                    )}
+                />
             </DialogActions>
         </Dialog>
     );

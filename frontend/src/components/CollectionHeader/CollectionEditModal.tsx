@@ -48,7 +48,7 @@ export function CollectionEditModal({
         undefined
     );
 
-    const { mutate: editCollectionMutation, isPending } = useMutation({
+    const { mutateAsync: editCollectionMutation } = useMutation({
         mutationFn: async ({
             title,
             description,
@@ -133,7 +133,7 @@ export function CollectionEditModal({
         },
         onSubmit: async ({ value }) => {
             const { title, description } = value;
-            editCollectionMutation({
+            await editCollectionMutation({
                 title,
                 description,
                 id,
@@ -183,28 +183,40 @@ export function CollectionEditModal({
                 </form>
             </DialogContent>
             <DialogActions>
-                <Button
-                    color="primary"
-                    variant="outlined"
-                    sx={{ mr: "auto" }}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        form.reset();
-                    }}
-                >
-                    Reset
-                </Button>
+                <form.Subscribe
+                    selector={(state) => state.isSubmitting}
+                    children={(isSubmitting) => (
+                        <Button
+                            color="primary"
+                            variant="outlined"
+                            sx={{ mr: "auto" }}
+                            disabled={isSubmitting}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                form.reset();
+                            }}
+                        >
+                            Reset
+                        </Button>
+                    )}
+                />
+
                 <Button onClick={onClose} color="secondary">
                     Cancel
                 </Button>
-                <Button
-                    type="submit"
-                    color="primary"
-                    form={`edit-collection-form-${id}`}
-                    disabled={isPending}
-                >
-                    Update Collection
-                </Button>
+                <form.Subscribe
+                    selector={(state) => state.isSubmitting}
+                    children={(isSubmitting) => (
+                        <Button
+                            type="submit"
+                            color="primary"
+                            form={`edit-collection-form-${id}`}
+                            disabled={isSubmitting}
+                        >
+                            Update Collection
+                        </Button>
+                    )}
+                />
             </DialogActions>
         </Dialog>
     );

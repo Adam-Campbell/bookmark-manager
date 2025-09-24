@@ -4,13 +4,11 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    CircularProgress,
 } from "@mui/material";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { z } from "zod";
-
 import { queryClient } from "../../http";
 import { useModal } from "../../ModalContext";
 import { useSession } from "../../SessionContext";
@@ -68,34 +66,33 @@ export default function AddBookmarkModal() {
     const { activeModal, closeModal } = useModal();
     const { isLoggedIn } = useSession();
 
-    const { mutate: addBookmarkMutation, isPending: submissionPending } =
-        useMutation({
-            mutationFn: async (bookmarkData: BookmarkResourceBody) => {
-                const response = await fetch("/api/bookmarks", {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(bookmarkData),
-                });
-                if (!response.ok) {
-                    throw new Error("Failed to add bookmark");
-                }
-                const bookmark = await response.json();
-                return bookmark;
-            },
-            onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
-                queryClient.invalidateQueries({ queryKey: ["tags"] });
-                queryClient.invalidateQueries({ queryKey: ["collections"] });
-                closeModal();
-                showSuccessSnackbar("Bookmark added");
-            },
-            onError: () => {
-                showErrorSnackbar("Failed to add bookmark");
-            },
-        });
+    const { mutateAsync: addBookmarkMutation } = useMutation({
+        mutationFn: async (bookmarkData: BookmarkResourceBody) => {
+            const response = await fetch("/api/bookmarks", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(bookmarkData),
+            });
+            if (!response.ok) {
+                throw new Error("Failed to add bookmark");
+            }
+            const bookmark = await response.json();
+            return bookmark;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
+            queryClient.invalidateQueries({ queryKey: ["tags"] });
+            queryClient.invalidateQueries({ queryKey: ["collections"] });
+            closeModal();
+            showSuccessSnackbar("Bookmark added");
+        },
+        onError: () => {
+            showErrorSnackbar("Failed to add bookmark");
+        },
+    });
 
     const form = useForm({
         defaultValues: addBookmarkDefaultValues,
@@ -105,7 +102,7 @@ export default function AddBookmarkModal() {
         onSubmit: async ({ value }) => {
             const { title, url, description, tags, collections } = value;
 
-            addBookmarkMutation({
+            await addBookmarkMutation({
                 title,
                 url,
                 description,
@@ -194,18 +191,19 @@ export default function AddBookmarkModal() {
                 <Button color="secondary" onClick={closeModal}>
                     Cancel
                 </Button>
-                <Button
-                    disabled={submissionPending}
-                    color="primary"
-                    type="submit"
-                    form="add-bookmark-form"
-                >
-                    {submissionPending ? (
-                        <CircularProgress size={20} />
-                    ) : (
-                        "Add Bookmark"
+                <form.Subscribe
+                    selector={(state) => state.isSubmitting}
+                    children={(isSubmitting) => (
+                        <Button
+                            color="primary"
+                            type="submit"
+                            form="add-bookmark-form"
+                            disabled={isSubmitting}
+                        >
+                            Add Bookmark
+                        </Button>
                     )}
-                </Button>
+                />
             </DialogActions>
         </Dialog>
     );

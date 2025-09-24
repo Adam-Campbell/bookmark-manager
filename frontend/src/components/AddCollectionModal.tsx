@@ -4,7 +4,6 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    CircularProgress,
 } from "@mui/material";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -36,32 +35,31 @@ export default function AddCollectionModal() {
     const { activeModal, closeModal } = useModal();
     const { isLoggedIn } = useSession();
 
-    const { mutate: addCollectionMutation, isPending: submissionPending } =
-        useMutation({
-            mutationFn: async (newCollection: CollectionResourceBody) => {
-                const response = await fetch("/api/collections", {
-                    credentials: "include",
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(newCollection),
-                });
-                if (!response.ok) {
-                    throw new Error("Failed to create collection");
-                }
-                const collection = await response.json();
-                return collection;
-            },
-            onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ["collections"] });
-                closeModal();
-                showSuccessSnackbar("Collection created");
-            },
-            onError: () => {
-                showErrorSnackbar("Failed to create collection");
-            },
-        });
+    const { mutateAsync: addCollectionMutation } = useMutation({
+        mutationFn: async (newCollection: CollectionResourceBody) => {
+            const response = await fetch("/api/collections", {
+                credentials: "include",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newCollection),
+            });
+            if (!response.ok) {
+                throw new Error("Failed to create collection");
+            }
+            const collection = await response.json();
+            return collection;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["collections"] });
+            closeModal();
+            showSuccessSnackbar("Collection created");
+        },
+        onError: () => {
+            showErrorSnackbar("Failed to create collection");
+        },
+    });
 
     const form = useForm({
         defaultValues: {
@@ -73,7 +71,7 @@ export default function AddCollectionModal() {
         },
         onSubmit: async ({ value }) => {
             const { title, description } = value;
-            addCollectionMutation({ title, description });
+            await addCollectionMutation({ title, description });
         },
     });
 
@@ -128,18 +126,19 @@ export default function AddCollectionModal() {
                 <Button onClick={closeModal} color="secondary">
                     Cancel
                 </Button>
-                <Button
-                    type="submit"
-                    color="primary"
-                    form="add-collection-form"
-                    disabled={submissionPending}
-                >
-                    {submissionPending ? (
-                        <CircularProgress size={20} />
-                    ) : (
-                        "Add Collection"
+                <form.Subscribe
+                    selector={(state) => state.isSubmitting}
+                    children={(isSubmitting) => (
+                        <Button
+                            type="submit"
+                            color="primary"
+                            form="add-collection-form"
+                            disabled={isSubmitting}
+                        >
+                            Add Collection
+                        </Button>
                     )}
-                </Button>
+                />
             </DialogActions>
         </Dialog>
     );

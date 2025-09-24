@@ -159,22 +159,31 @@ export default function SignUpPage() {
                             justifyContent: "space-between",
                         }}
                     >
-                        <Button
-                            variant="outlined"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                form.reset();
-                            }}
-                        >
-                            Reset
-                        </Button>
-                        <Button
-                            sx={{ marginLeft: "auto" }}
-                            variant="contained"
-                            type="submit"
-                        >
-                            Sign Up
-                        </Button>
+                        <form.Subscribe
+                            selector={(state) => state.isSubmitting}
+                            children={(isSubmitting) => (
+                                <>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            form.reset();
+                                        }}
+                                        disabled={isSubmitting}
+                                    >
+                                        Reset
+                                    </Button>
+                                    <Button
+                                        sx={{ marginLeft: "auto" }}
+                                        variant="contained"
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                    >
+                                        Sign Up
+                                    </Button>
+                                </>
+                            )}
+                        />
                     </Box>
                 </Stack>
             </Paper>
