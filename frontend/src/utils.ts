@@ -1,3 +1,23 @@
+import { type AnyFieldApi } from "@tanstack/react-form";
+
+/**
+ * Checks if a Tanstack Form field has errors based on its state.
+ * @param field The form field to check for errors.
+ * @returns True if the field has errors, otherwise false.
+ */
+export function fieldHasErrors(field: AnyFieldApi): boolean {
+    return field.state.meta.isTouched && !field.state.meta.isValid;
+}
+
+/**
+ * Gets the error message for a Tanstack Form field if it has errors.
+ * @param field The form field to check for errors.
+ * @returns The error message if the field has errors, otherwise null.
+ */
+export function getFieldErrors(field: AnyFieldApi): string | null {
+    return fieldHasErrors(field) ? field.state.meta.errors[0].message : null;
+}
+
 /**
  * Takes the value and returns a promise that resolves with that value after the specified delay.
  * Can be awaited for testing purposes.

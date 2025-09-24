@@ -4,10 +4,11 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    TextField,
 } from "@mui/material";
+import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { z } from "zod";
 import { queryClient } from "../../http";
 import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import {
@@ -15,6 +16,18 @@ import {
     type CollectionWithBookmarks,
     type CollectionWithBookmarkCount,
 } from "../../types";
+import FormTextField from "../FormTextField";
+
+const CollectionEditSchema = z.object({
+    title: z
+        .string()
+        .min(1, "Please provide a collection title")
+        .max(150, "Collection title cannot exceed 150 characters"),
+    description: z
+        .string()
+        .min(2, "Please provide a collection description")
+        .max(500, "Collection description cannot exceed 500 characters"),
+});
 
 type CollectionEditModalProps = {
     isOpen: boolean;
@@ -31,23 +44,11 @@ export function CollectionEditModal({
     description,
     id,
 }: CollectionEditModalProps) {
-    const [collectionTitle, setCollectionTitle] = useState(title);
-    const [collectionDescription, setCollectionDescription] =
-        useState(description);
-
     const [prevIsOpen, setPrevIsOpen] = useState<boolean | undefined>(
         undefined
     );
 
-    if (isOpen && !prevIsOpen) {
-        setPrevIsOpen(true);
-        setCollectionTitle(title);
-        setCollectionDescription(description);
-    } else if (!isOpen && prevIsOpen) {
-        setPrevIsOpen(false);
-    }
-
-    const { mutate, isPending } = useMutation({
+    const { mutate: editCollectionMutation, isPending } = useMutation({
         mutationFn: async ({
             title,
             description,
@@ -76,8 +77,8 @@ export function CollectionEditModal({
 
             queryClient.setQueryData(["collections", { id }], {
                 ...previousCollection,
-                title: collectionTitle,
-                description: collectionDescription,
+                title,
+                description,
             });
             await queryClient.cancelQueries({ queryKey: ["collections"] });
             const previousAllCollections:
@@ -90,8 +91,8 @@ export function CollectionEditModal({
                     if (collection.id === id) {
                         return {
                             ...collection,
-                            title: collectionTitle,
-                            description: collectionDescription,
+                            title,
+                            description,
                         };
                     }
                     return collection;
@@ -122,19 +123,36 @@ export function CollectionEditModal({
         },
     });
 
-    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        console.log({
+    const form = useForm({
+        defaultValues: {
             title,
             description,
-            id,
-        });
-        mutate({
-            title: collectionTitle,
-            description: collectionDescription,
-            id,
-        });
-        onClose();
+        },
+        validators: {
+            onChange: CollectionEditSchema,
+        },
+        onSubmit: async ({ value }) => {
+            const { title, description } = value;
+            editCollectionMutation({
+                title,
+                description,
+                id,
+            });
+            onClose();
+        },
+    });
+
+    if (isOpen && !prevIsOpen) {
+        setPrevIsOpen(true);
+        form.reset();
+    } else if (!isOpen && prevIsOpen) {
+        setPrevIsOpen(false);
+    }
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
     }
 
     return (
@@ -142,32 +160,40 @@ export function CollectionEditModal({
             <DialogTitle>Edit Collection</DialogTitle>
             <DialogContent>
                 <form id={`edit-collection-form-${id}`} onSubmit={handleSubmit}>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Collection Title"
-                        type="text"
-                        fullWidth
-                        variant="filled"
-                        value={collectionTitle}
-                        onChange={(e) => setCollectionTitle(e.target.value)}
+                    <form.Field
+                        name="title"
+                        children={(field) => (
+                            <FormTextField
+                                field={field}
+                                label="Collection Title"
+                                shouldAutoFocus
+                            />
+                        )}
                     />
-                    <TextField
-                        margin="dense"
-                        label="Description"
-                        type="text"
-                        fullWidth
-                        variant="filled"
-                        multiline
-                        rows={4}
-                        value={collectionDescription}
-                        onChange={(e) =>
-                            setCollectionDescription(e.target.value)
-                        }
+                    <form.Field
+                        name="description"
+                        children={(field) => (
+                            <FormTextField
+                                field={field}
+                                label="Description"
+                                isTextArea
+                            />
+                        )}
                     />
                 </form>
             </DialogContent>
             <DialogActions>
+                <Button
+                    color="primary"
+                    variant="outlined"
+                    sx={{ mr: "auto" }}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        form.reset();
+                    }}
+                >
+                    Reset
+                </Button>
                 <Button onClick={onClose} color="secondary">
                     Cancel
                 </Button>
