@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from "fastify";
 import { Prisma } from "../../generated/prisma/index.js";
 import { type FastifyZod } from "../../types/index.ts";
 import { z } from "zod";
-import { TagSchema, ErrorResponseSchema } from "../schemas.ts";
+import { TagSchema, ErrorResponseSchema, IntIdParams } from "../schemas.ts";
 
 const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
     const { prisma } = fastify;
@@ -34,7 +34,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         {
             schema: {
                 body: z.object({
-                    name: z.string().min(2).max(100),
+                    name: z.string().min(1).max(60),
                 }),
                 response: {
                     200: TagSchema,
@@ -74,11 +74,9 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/:id",
         {
             schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
+                params: IntIdParams,
                 body: z.object({
-                    name: z.string().min(2).max(100),
+                    name: z.string().min(1).max(60),
                 }),
                 response: {
                     200: TagSchema,
@@ -142,9 +140,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/:id",
         {
             schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
+                params: IntIdParams,
                 response: {
                     204: z.undefined(),
                     401: ErrorResponseSchema,

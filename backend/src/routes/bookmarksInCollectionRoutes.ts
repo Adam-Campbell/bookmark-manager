@@ -5,6 +5,7 @@ import { type FastifyZod } from "../../types/index.ts";
 import {
     CollectionWithBookmarksSchema,
     ErrorResponseSchema,
+    IntId,
 } from "../schemas.ts";
 
 /*
@@ -25,10 +26,10 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         {
             schema: {
                 params: z.object({
-                    collectionId: z.coerce.number().int(),
+                    collectionId: IntId,
                 }),
                 body: z.object({
-                    bookmarkIds: z.array(z.coerce.number().int()),
+                    bookmarkIds: z.array(IntId),
                 }),
                 response: {
                     200: CollectionWithBookmarksSchema,
@@ -137,10 +138,10 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         {
             schema: {
                 params: z.object({
-                    collectionId: z.coerce.number().int(),
+                    collectionId: IntId,
                 }),
                 body: z.object({
-                    bookmarkIds: z.array(z.coerce.number().int()),
+                    bookmarkIds: z.array(IntId),
                 }),
                 response: {
                     204: z.undefined(),
@@ -243,8 +244,8 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         {
             schema: {
                 params: z.object({
-                    collectionId: z.coerce.number().int(),
-                    bookmarkId: z.coerce.number().int(),
+                    collectionId: IntId,
+                    bookmarkId: IntId,
                 }),
                 response: {
                     204: z.undefined(),
@@ -347,7 +348,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         {
             schema: {
                 params: z.object({
-                    collectionId: z.coerce.number().int(),
+                    collectionId: IntId,
                 }),
                 body: z.object({
                     currentIndex: z.coerce.number().int().nonnegative(),

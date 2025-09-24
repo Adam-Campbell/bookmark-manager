@@ -3,9 +3,11 @@ import { z } from "zod";
 import { Prisma, Collection } from "../../generated/prisma/index.js";
 import { type FastifyZod } from "../../types/index.ts";
 import {
+    CollectionBodySchema,
     CollectionWithBookmarkCountSchema,
     CollectionWithBookmarksSchema,
     ErrorResponseSchema,
+    IntIdParams,
 } from "../schemas.ts";
 import bookmarksInCollectionRoutes from "./bookmarksInCollectionRoutes.ts";
 
@@ -59,9 +61,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/:id",
         {
             schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
+                params: IntIdParams,
                 response: {
                     200: CollectionWithBookmarksSchema,
                     401: ErrorResponseSchema,
@@ -117,10 +117,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/",
         {
             schema: {
-                body: z.object({
-                    title: z.string(),
-                    description: z.string().optional(),
-                }),
+                body: CollectionBodySchema,
                 response: {
                     200: CollectionWithBookmarksSchema,
                     401: ErrorResponseSchema,
@@ -136,7 +133,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
             const collection = await prisma.collection.create({
                 data: {
                     title,
-                    description: description ?? "",
+                    description,
                     userId,
                 },
             });
@@ -155,13 +152,8 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/:id",
         {
             schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
-                body: z.object({
-                    title: z.string(),
-                    description: z.string().optional(),
-                }),
+                params: IntIdParams,
+                body: CollectionBodySchema,
                 response: {
                     200: CollectionWithBookmarksSchema,
                     401: ErrorResponseSchema,
@@ -242,9 +234,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/:id",
         {
             schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
+                params: IntIdParams,
                 response: {
                     204: z.undefined(),
                     401: ErrorResponseSchema,

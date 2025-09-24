@@ -1,9 +1,20 @@
 import { z } from "zod";
 
+export const IntId = z.coerce.number().int().nonnegative();
+
+export const IntIdParams = z.object({
+    id: IntId,
+});
+
+export const CollectionBodySchema = z.object({
+    title: z.string().min(1).max(150),
+    description: z.string().min(1).max(500),
+});
+
 export const BookmarkBodySchema = z.object({
-    title: z.string(),
+    title: z.string().min(1).max(150),
     url: z.url(),
-    description: z.string().optional(),
+    description: z.string().min(1).max(500),
     tags: z
         .array(
             z.object({
@@ -22,38 +33,36 @@ export const BookmarkBodySchema = z.object({
         .optional(),
 });
 
-// z.iso.datetime()
-
 export const TagSchema = z.object({
-    id: z.number(),
-    name: z.string().min(2).max(100),
-    userId: z.string(),
+    id: z.int().nonnegative(),
+    name: z.string().min(1).max(60),
+    userId: z.string().min(1),
     createdAt: z.date(),
     updatedAt: z.date(),
 });
 
 export const BookmarkSchema = z.object({
-    id: z.number(),
-    title: z.string(),
+    id: z.int().nonnegative(),
+    title: z.string().min(1).max(150),
     url: z.url(),
-    description: z.string().optional(),
+    description: z.string().min(1).max(500),
     tags: z.array(TagSchema),
-    userId: z.string(),
+    userId: z.string().min(1),
     createdAt: z.date(),
     updatedAt: z.date(),
 });
 
 export const CollectionSchema = z.object({
-    id: z.number(),
-    title: z.string(),
-    description: z.string().optional(),
-    userId: z.string(),
+    id: z.int().nonnegative(),
+    title: z.string().min(1).max(150),
+    description: z.string().min(1).max(500),
+    userId: z.string().min(1),
     createdAt: z.date(),
     updatedAt: z.date(),
 });
 
 export const CollectionWithBookmarkCountSchema = CollectionSchema.extend({
-    bookmarkCount: z.number(),
+    bookmarkCount: z.int().nonnegative(),
 });
 
 export const BookmarkWithCollectionsSchema = BookmarkSchema.extend({
@@ -61,7 +70,7 @@ export const BookmarkWithCollectionsSchema = BookmarkSchema.extend({
 });
 
 export const BookmarkWithIndexSchema = BookmarkSchema.extend({
-    bookmarkIndex: z.number(),
+    bookmarkIndex: z.int().nonnegative(),
 });
 
 export const CollectionWithBookmarksSchema = CollectionSchema.extend({

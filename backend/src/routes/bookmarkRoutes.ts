@@ -7,6 +7,7 @@ import {
     BookmarkSchema,
     BookmarkWithCollectionsSchema,
     ErrorResponseSchema,
+    IntIdParams,
 } from "../schemas.ts";
 
 type TagData = {
@@ -114,9 +115,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/:id",
         {
             schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
+                params: IntIdParams,
                 response: {
                     200: BookmarkSchema,
                     401: ErrorResponseSchema,
@@ -186,7 +185,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
                                 title,
                                 url,
                                 userId,
-                                description: description ?? "",
+                                description,
                                 tags: {
                                     connect: allTags,
                                 },
@@ -220,9 +219,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/:id",
         {
             schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
+                params: IntIdParams,
                 body: BookmarkBodySchema,
                 response: {
                     200: BookmarkSchema,
@@ -301,9 +298,7 @@ const routes: FastifyPluginAsync = async (fastify: FastifyZod, options) => {
         "/:id",
         {
             schema: {
-                params: z.object({
-                    id: z.coerce.number().int(),
-                }),
+                params: IntIdParams,
                 response: {
                     204: z.undefined(),
                     401: ErrorResponseSchema,
