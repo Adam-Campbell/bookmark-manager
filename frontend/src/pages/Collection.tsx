@@ -27,7 +27,12 @@ export default function CollectionPage() {
     }
 
     return (
-        <Container sx={{ py: 6 }}>
+        <Container
+            sx={{
+                pt: 4,
+                pb: { xs: 10, tablet: 4 },
+            }}
+        >
             <CollectionHeader
                 title={collectionData.title}
                 description={collectionData.description}
@@ -47,7 +52,7 @@ export default function CollectionPage() {
                     variant="contained"
                     color="primary"
                     sx={{ width: { xs: "100%", sm: "initial" } }}
-                    startIcon={<AddIcon />}
+                    endIcon={<AddIcon />}
                     onClick={() => setAddBookmarksModalIsOpen(true)}
                 >
                     Add Bookmarks

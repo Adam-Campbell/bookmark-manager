@@ -96,6 +96,11 @@ export default function AddCollectionModal() {
             open={activeModal === "addCollection"}
             onClose={closeModal}
             closeAfterTransition={false}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
         >
             <DialogTitle>Add Collection</DialogTitle>
             <DialogContent>

@@ -47,7 +47,7 @@ export default function CollectionHeader({
                 <Chip label={bookmarkCountText} size="small" />
                 <Button
                     variant="contained"
-                    color="secondary"
+                    color="error"
                     endIcon={<DeleteIcon />}
                     sx={{
                         mt: { xs: 1, sm: 0 },

@@ -59,7 +59,7 @@ export default function SignInPage() {
     }
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 6 }}>
+        <Container maxWidth="sm" sx={{ py: 6 }}>
             <Paper elevation={3} sx={{ p: 4 }}>
                 <Stack component="form" method="post" onSubmit={handleSubmit}>
                     <Typography variant="h5" component="h1" gutterBottom>
@@ -94,7 +94,7 @@ export default function SignInPage() {
                             />
                         )}
                     />
-                    <Typography variant="body2" sx={{ mt: 2 }}>
+                    <Typography variant="body2" sx={{ mt: 2, mb: 1 }}>
                         Don't have an account?{" "}
                         <Link
                             component={RouterLink}

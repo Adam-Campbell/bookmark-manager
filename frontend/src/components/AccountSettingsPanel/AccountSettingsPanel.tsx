@@ -1,3 +1,5 @@
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { Paper, Box, Button, Typography } from "@mui/material";
 import { useState } from "react";
 import { authClient } from "../../authClient";
@@ -5,6 +7,7 @@ import { ChangePasswordModal } from "./ChangePasswordModal";
 import { DeleteAccountModal } from "./DeleteAccountModal";
 import { EmailInlineEditRow } from "./EmailInlineEditRow";
 import { NameInlineEditRow } from "./NameInlineEditRow";
+import { ThemeSelector } from "./ThemeSelector";
 
 export default function AccountSettingsPanel() {
     const { isPending } = authClient.useSession();
@@ -24,6 +27,7 @@ export default function AccountSettingsPanel() {
                 </Typography>
                 <EmailInlineEditRow />
                 <NameInlineEditRow pushDown />
+                <ThemeSelector />
                 <Box
                     sx={{
                         mt: 4,
@@ -38,16 +42,18 @@ export default function AccountSettingsPanel() {
                 >
                     <Button
                         variant="contained"
-                        onClick={() => setPasswordModalIsOpen(true)}
-                    >
-                        Change Password
-                    </Button>
-                    <Button
-                        variant="contained"
                         color="error"
+                        endIcon={<DeleteIcon />}
                         onClick={() => setDeleteAccountModalIsOpen(true)}
                     >
                         Delete Account
+                    </Button>
+                    <Button
+                        variant="contained"
+                        endIcon={<EditIcon />}
+                        onClick={() => setPasswordModalIsOpen(true)}
+                    >
+                        Change Password
                     </Button>
                 </Box>
             </Paper>

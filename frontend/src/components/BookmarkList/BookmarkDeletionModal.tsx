@@ -63,7 +63,15 @@ export function BookmarkDeletionModal({
     };
 
     return (
-        <Dialog open={isOpen} onClose={onClose}>
+        <Dialog
+            open={isOpen}
+            onClose={onClose}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
+        >
             <DialogTitle>Delete Bookmark</DialogTitle>
             <DialogContent>
                 Are you sure you want to delete this bookmark? This action

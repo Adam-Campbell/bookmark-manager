@@ -60,7 +60,7 @@ export default function BookmarkListItem({
                         {title}
                     </Typography>
 
-                    {controls && <Box>{controls}</Box>}
+                    {controls && <Box sx={{ flexShrink: 0 }}>{controls}</Box>}
                 </Box>
 
                 <Link

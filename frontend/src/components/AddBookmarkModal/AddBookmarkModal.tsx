@@ -133,6 +133,11 @@ export default function AddBookmarkModal() {
             open={activeModal === "addBookmark"}
             onClose={closeModal}
             closeAfterTransition={false}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
         >
             <DialogTitle>Add Bookmark</DialogTitle>
             <DialogContent>

@@ -62,7 +62,12 @@ export default function BookmarksPage() {
     }, [bookmarksData, chosenTags, searchQuery]);
 
     return (
-        <Box sx={{ py: 4 }}>
+        <Box
+            sx={{
+                pt: 4,
+                pb: { xs: 10, tablet: 4 },
+            }}
+        >
             <Container maxWidth="lg">
                 <StickyPanel
                     isOpenLabel="Hide Filters"

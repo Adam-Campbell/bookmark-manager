@@ -86,7 +86,7 @@ export default function SignUpPage() {
     }
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 6 }}>
+        <Container maxWidth="sm" sx={{ py: 6 }}>
             <Paper elevation={3} sx={{ p: 4 }}>
                 <Stack
                     component="form"
@@ -143,7 +143,7 @@ export default function SignUpPage() {
                             />
                         )}
                     />
-                    <Typography variant="body2" sx={{ mt: 2 }}>
+                    <Typography variant="body2" sx={{ mt: 2, mb: 1 }}>
                         Already have an account?{" "}
                         <Link
                             component={RouterLink}

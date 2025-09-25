@@ -125,7 +125,16 @@ export function BookmarkEditModal({
     }
 
     return (
-        <Dialog open={isOpen} onClose={onClose} closeAfterTransition={false}>
+        <Dialog
+            open={isOpen}
+            onClose={onClose}
+            closeAfterTransition={false}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
+        >
             <DialogTitle>Edit Bookmark</DialogTitle>
             <DialogContent>
                 <form

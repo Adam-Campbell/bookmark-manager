@@ -156,7 +156,16 @@ export function CollectionEditModal({
     }
 
     return (
-        <Dialog open={isOpen} onClose={onClose} closeAfterTransition={false}>
+        <Dialog
+            open={isOpen}
+            onClose={onClose}
+            closeAfterTransition={false}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
+        >
             <DialogTitle>Edit Collection</DialogTitle>
             <DialogContent>
                 <form id={`edit-collection-form-${id}`} onSubmit={handleSubmit}>

@@ -123,6 +123,11 @@ export default function AddBookmarksToCollectionModal({
             open={isOpen}
             onClose={onClose}
             closeAfterTransition={false}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
         >
             <DialogTitle>Add bookmarks to collection</DialogTitle>
             <DialogContent

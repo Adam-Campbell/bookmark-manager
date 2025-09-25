@@ -77,7 +77,16 @@ export function CollectionDeletionModal({
     }
 
     return (
-        <Dialog open={isOpen} onClose={onClose} closeAfterTransition={false}>
+        <Dialog
+            open={isOpen}
+            onClose={onClose}
+            closeAfterTransition={false}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
+        >
             <DialogTitle>Delete Collection</DialogTitle>
             <DialogContent>
                 Are you sure you want to delete this collection? This action

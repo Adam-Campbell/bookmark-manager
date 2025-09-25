@@ -91,7 +91,16 @@ export function ChangePasswordModal({
     }
 
     return (
-        <Dialog open={isOpen} onClose={onClose} closeAfterTransition={false}>
+        <Dialog
+            open={isOpen}
+            onClose={onClose}
+            closeAfterTransition={false}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
+        >
             <DialogTitle>Change Password</DialogTitle>
             <DialogContent>
                 <form id="change-password-form" onSubmit={handleSubmit}>

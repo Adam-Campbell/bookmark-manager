@@ -37,7 +37,13 @@ export default function NavBar() {
     return (
         <Box position="sticky" top="10px" sx={{ width: "100%", zIndex: 1200 }}>
             <Container maxWidth="lg">
-                <AppBar position="static" sx={{ borderRadius: 2 }}>
+                <AppBar
+                    position="static"
+                    sx={{
+                        borderRadius: 2,
+                        bgcolor: (theme) => theme.palette.primary.main,
+                    }}
+                >
                     <Toolbar>
                         <Typography
                             variant="h6"

@@ -83,7 +83,16 @@ export function DeleteAccountModal({
     }
 
     return (
-        <Dialog open={isOpen} onClose={onClose} closeAfterTransition={false}>
+        <Dialog
+            open={isOpen}
+            onClose={onClose}
+            closeAfterTransition={false}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                },
+            }}
+        >
             <DialogTitle>Delete Account</DialogTitle>
             <DialogContent>
                 <form

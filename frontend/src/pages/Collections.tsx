@@ -11,7 +11,13 @@ export default function CollectionsPage() {
     );
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container
+            maxWidth="lg"
+            sx={{
+                pt: 4,
+                pb: { xs: 10, tablet: 4 },
+            }}
+        >
             <Typography variant="h4" component="h1" gutterBottom>
                 Collections
             </Typography>

@@ -33,7 +33,7 @@ export function CreationMenu() {
                 id="creation-menu-button"
                 variant="contained"
                 color="primary"
-                startIcon={<AddIcon />}
+                endIcon={<AddIcon />}
                 onClick={handleClick}
                 aria-controls={isOpen ? "creation-menu" : undefined}
                 aria-haspopup="true"
