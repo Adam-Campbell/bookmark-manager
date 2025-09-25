@@ -1,6 +1,9 @@
-import { useRouteError, isRouteErrorResponse, Route } from "react-router";
+import {
+    useRouteError,
+    isRouteErrorResponse,
+    Link as RouterLink,
+} from "react-router";
 import { Typography, Container, Button } from "@mui/material";
-import { Link as RouterLink } from "react-router";
 
 function getMessage(status: number): string {
     const statusMessageMap: Record<number, string> = {
