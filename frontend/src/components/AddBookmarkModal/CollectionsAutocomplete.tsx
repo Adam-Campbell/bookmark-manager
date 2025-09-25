@@ -1,4 +1,9 @@
-import { Autocomplete, TextField, CircularProgress } from "@mui/material";
+import {
+    Autocomplete,
+    TextField,
+    CircularProgress,
+    Typography,
+} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import {
     collectionsQuery,
@@ -27,10 +32,6 @@ export const CollectionsAutocomplete = ({
             select: transformCollectionsToCollectionRepresentations,
         })
     );
-
-    if (error) {
-        console.log("error is: ", error);
-    }
 
     return (
         <>
@@ -71,9 +72,9 @@ export const CollectionsAutocomplete = ({
                 }}
             />
             {error && (
-                <p style={{ color: "red" }}>
-                    An error occurred when retrieving collections.
-                </p>
+                <Typography variant="body2" color="error">
+                    Unable to retrieve collections data.
+                </Typography>
             )}
         </>
     );

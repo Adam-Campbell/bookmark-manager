@@ -40,7 +40,6 @@ export function DeleteAccountModal({
         },
         onSubmit: async ({ value, formApi }) => {
             const { password } = value;
-            console.log(password);
             const response: any = await authClient.deleteUser({
                 password,
             });

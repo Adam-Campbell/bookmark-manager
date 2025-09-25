@@ -72,7 +72,6 @@ export function CollectionDeletionModal({
     });
 
     function handleDeleteClick() {
-        console.log("Delete collection", id);
         mutate(id);
     }
 

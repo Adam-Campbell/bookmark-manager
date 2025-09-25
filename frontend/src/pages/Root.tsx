@@ -9,7 +9,7 @@ import GlobalSnackbar from "../components/GlobalSnackbar";
 
 export default function RootLayout() {
     const sessionData = useLoaderData();
-    console.log(sessionData);
+
     return (
         <>
             <SessionProvider initialSessionData={sessionData}>

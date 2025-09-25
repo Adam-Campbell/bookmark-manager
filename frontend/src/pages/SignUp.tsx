@@ -54,7 +54,6 @@ export default function SignUpPage() {
             onChange: SignUpSchema,
         },
         onSubmit: async ({ value, formApi }) => {
-            console.log("Submit was called");
             const { email, password, username } = value;
             try {
                 await signUp(email, password, username);
@@ -75,7 +74,6 @@ export default function SignUpPage() {
     });
 
     function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
-        console.log("handleFormSubmit was called");
         e.preventDefault();
         e.stopPropagation();
         form.handleSubmit();
