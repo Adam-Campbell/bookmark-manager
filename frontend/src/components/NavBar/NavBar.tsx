@@ -1,15 +1,9 @@
-import {
-    Box,
-    Container,
-    AppBar,
-    Toolbar,
-    Typography,
-    useMediaQuery,
-} from "@mui/material";
-import { NavLink } from "./NavLink";
-import { UserMenu } from "./UserMenu";
-import { CreationMenu } from "./CreationMenu";
+import { Box, Container, AppBar, Toolbar, useMediaQuery } from "@mui/material";
 import { useSession } from "../../SessionContext";
+import { CreationMenu } from "./CreationMenu";
+import { NavLink } from "./NavLink";
+import { NavLogo } from "./NavLogo";
+import { UserMenu } from "./UserMenu";
 
 export default function NavBar() {
     const isTabletUp = useMediaQuery("(min-width:768px)");
@@ -45,13 +39,7 @@ export default function NavBar() {
                     }}
                 >
                     <Toolbar>
-                        <Typography
-                            variant="h6"
-                            component="div"
-                            sx={{ flexGrow: 1 }}
-                        >
-                            Bookmarkly
-                        </Typography>
+                        <NavLogo />
                         {isLoggedIn ? (
                             <AuthenticatedLinks />
                         ) : (
