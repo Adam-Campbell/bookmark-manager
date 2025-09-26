@@ -1,9 +1,9 @@
-import AddIcon from "@mui/icons-material/Add";
-import { Box, Paper, List, Typography, Button } from "@mui/material";
+import { Box, Paper, List } from "@mui/material";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
 import { useModal } from "../../ModalContext";
 import { type Bookmark } from "../../types";
+import EmptyListDisplay from "../EmptyListDisplay";
 import { EditableBookmarkListItem } from "./EditableBookmarkListItem";
 
 type BookmarkListProps = {
@@ -35,37 +35,28 @@ export default function BookmarkList({
     const listTranslate =
         (items[0]?.start ?? 0) - virtualizer.options.scrollMargin;
 
+    // We render this if the user has no bookmarks at all
     if (!userHasBookmarks) {
         return (
-            <Paper variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-                <Typography variant="subtitle1" component="p" sx={{ mb: 2 }}>
-                    It looks like you haven't created any bookmarks yet.
-                </Typography>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    endIcon={<AddIcon />}
-                    onClick={handleCreateBookmarkClick}
-                >
-                    Create Bookmark
-                </Button>
-            </Paper>
+            <EmptyListDisplay
+                message="It looks like you haven't created any bookmarks yet."
+                creationAction={handleCreateBookmarkClick}
+                creationMessage="Create Bookmark"
+            />
         );
     }
 
+    // We render this if the user has bookmarks, but they are currently all filtered out.
     if (bookmarksToDisplay.length === 0) {
         return (
-            <Paper variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-                <Typography variant="subtitle1" component="p">
-                    No matching bookmarks
-                </Typography>
-                <Typography variant="body1" component="p">
-                    Try adjusting your search query or tag filters.
-                </Typography>
-            </Paper>
+            <EmptyListDisplay
+                message="No matching bookmarks."
+                extraInfo="Try adjusting your search query or tag filters."
+            />
         );
     }
 
+    // We render this if the user has bookmarks and at least one has satisfied the filters.
     return (
         <Paper ref={containerRef} variant="outlined">
             <Box

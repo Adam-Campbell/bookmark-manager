@@ -7,6 +7,7 @@ import AddBookmarksToCollectionModal from "../components/AddBookmarksToCollectio
 import CollectionBookmarkList from "../components/CollectionBookmarkList";
 import CollectionHeader from "../components/CollectionHeader";
 import { queryClient, collectionQuery } from "../http";
+import EmptyListDisplay from "../components/EmptyListDisplay";
 
 export default function CollectionPage() {
     const params = useParams();
@@ -28,6 +29,7 @@ export default function CollectionPage() {
 
     return (
         <Container
+            maxWidth="lg"
             sx={{
                 pt: 4,
                 pb: { xs: 10, tablet: 4 },
@@ -63,11 +65,18 @@ export default function CollectionPage() {
                 isOpen={addBookmarksModalIsOpen}
                 onClose={() => setAddBookmarksModalIsOpen(false)}
             />
-
-            <CollectionBookmarkList
-                id={id}
-                bookmarks={collectionData.bookmarks}
-            />
+            {collectionData.bookmarks.length ? (
+                <CollectionBookmarkList
+                    id={id}
+                    bookmarks={collectionData.bookmarks}
+                />
+            ) : (
+                <EmptyListDisplay
+                    message="It looks like you haven't added any bookmarks to this collection yet."
+                    creationAction={() => setAddBookmarksModalIsOpen(true)}
+                    creationMessage="Add Bookmarks"
+                />
+            )}
         </Container>
     );
 }

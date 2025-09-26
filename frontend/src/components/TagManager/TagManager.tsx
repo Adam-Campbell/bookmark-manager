@@ -10,7 +10,7 @@ export default function TagManager() {
         })
     );
 
-    if (!tagsData) {
+    if (!tagsData || tagsData.length === 0) {
         return null;
     }
 

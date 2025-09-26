@@ -1,16 +1,26 @@
 import { Grid } from "@mui/material";
-import { CollectionCard } from "./CollectionCard";
+import { useModal } from "../../ModalContext";
 import { type CollectionWithBookmarkCount } from "../../types";
+import EmptyListDisplay from "../EmptyListDisplay";
 import { CreateCollectionCard } from "./CreateCollectionCard";
-import { NoCollectionsDisplay } from "./NoCollectionsDisplay";
+import { CollectionCard } from "./CollectionCard";
 
 export default function CollectionsGrid({
     collections,
 }: {
     collections: CollectionWithBookmarkCount[];
 }) {
+    const { openModal } = useModal();
+
     if (collections.length === 0) {
-        return <NoCollectionsDisplay />;
+        return (
+            <EmptyListDisplay
+                message="It looks like you haven't created any collections yet."
+                extraInfo="Collections allow you to organise your bookmarks into distinct lists. Create one to get started!"
+                creationMessage="Create Collection"
+                creationAction={() => openModal("addCollection")}
+            />
+        );
     }
 
     return (

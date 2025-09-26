@@ -13,6 +13,7 @@ import { queryClient, bookmarksQuery } from "../../http";
 import { showErrorSnackbar, showSuccessSnackbar } from "../../snackbarStore";
 import { type BookmarkWithIndex, type TagRepresentation } from "../../types";
 import BookmarkSearchBar from "../BookmarkSearchBar";
+import EmptyListDisplay from "../EmptyListDisplay";
 import TagsAutocomplete from "../TagsAutocomplete";
 import { BookmarkVirtualList } from "./BookmarkVirtualList";
 
@@ -117,6 +118,44 @@ export default function AddBookmarksToCollectionModal({
         });
     }
 
+    if (!allBookmarks) {
+        return null;
+    }
+
+    let innerContent;
+
+    if (allBookmarks.length === 0) {
+        innerContent = (
+            <EmptyListDisplay
+                message="It looks like you haven't created any bookmarks yet."
+                displayInline
+            />
+        );
+    } else if (currentBookmarks.length === allBookmarks.length) {
+        innerContent = (
+            <EmptyListDisplay
+                message="You have already added all bookmarks to this collection."
+                displayInline
+            />
+        );
+    } else if (bookmarksToDisplay.length === 0) {
+        innerContent = (
+            <EmptyListDisplay
+                message="No matching bookmarks."
+                extraInfo="Try adjusting your search query or tag filters."
+                displayInline
+            />
+        );
+    } else {
+        innerContent = (
+            <BookmarkVirtualList
+                bookmarksToDisplay={bookmarksToDisplay}
+                selectedBookmarks={selectedBookmarks}
+                onToggleBookmark={toggleBookmarkSelection}
+            />
+        );
+    }
+
     return (
         <Dialog
             fullScreen
@@ -145,13 +184,7 @@ export default function AddBookmarksToCollectionModal({
                     handleTagsChange={setChosenTags}
                     label="Filter by tags"
                 />
-                {allBookmarks && (
-                    <BookmarkVirtualList
-                        bookmarksToDisplay={bookmarksToDisplay}
-                        selectedBookmarks={selectedBookmarks}
-                        onToggleBookmark={toggleBookmarkSelection}
-                    />
-                )}
+                {innerContent}
             </DialogContent>
             <DialogActions>
                 <Button color="secondary" onClick={onClose}>
