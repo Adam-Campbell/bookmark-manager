@@ -14,6 +14,7 @@ export const auth = betterAuth({
             maxAge: 5 * 60,
         },
         updateAge: 60 * 60 * 24,
+        expiresIn: 60 * 60 * 24 * 28,
     },
     user: {
         changeEmail: {
