@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from "fastify";
 import { Prisma } from "../../generated/prisma/index.js";
-import { type FastifyZod } from "../../types/index.ts";
+import { type FastifyZod } from "../types.ts";
 import { z } from "zod";
 import { TagSchema, ErrorResponseSchema, IntIdParams } from "../schemas.ts";
 

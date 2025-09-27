@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { Prisma, Collection } from "../../generated/prisma/index.js";
-import { type FastifyZod } from "../../types/index.ts";
+import { type FastifyZod } from "../types.ts";
 import {
     CollectionBodySchema,
     CollectionWithBookmarkCountSchema,
