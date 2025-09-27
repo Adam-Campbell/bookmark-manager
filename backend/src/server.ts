@@ -1,17 +1,24 @@
-import Fastify from "fastify";
-import prismaPlugin from "./plugins/prismaPlugin.ts";
-import authUserPlugin from "./plugins/authUserPlugin.ts";
-import betterAuthAdapterPlugin from "./plugins/betterAuthAdapterPlugin.ts";
-import tagRoutes from "./routes/tagRoutes.ts";
-import bookmarkRoutes from "./routes/bookmarkRoutes.ts";
-import collectionRoutes from "./routes/collectionRoutes.ts";
-import dotenv from "dotenv";
 import fastifyCors from "@fastify/cors";
-import { type ZodTypeProvider } from "fastify-type-provider-zod";
+import fastifyStatic from "@fastify/static";
+import dotenv from "dotenv";
+import Fastify from "fastify";
 import {
     serializerCompiler,
     validatorCompiler,
+    type ZodTypeProvider,
 } from "fastify-type-provider-zod";
+import path from "path";
+import { fileURLToPath } from "url";
+import authUserPlugin from "./plugins/authUserPlugin.ts";
+import betterAuthAdapterPlugin from "./plugins/betterAuthAdapterPlugin.ts";
+import prismaPlugin from "./plugins/prismaPlugin.ts";
+import serveFrontendPlugin from "./plugins/serveFrontendPlugin.ts";
+import bookmarkRoutes from "./routes/bookmarkRoutes.ts";
+import collectionRoutes from "./routes/collectionRoutes.ts";
+import tagRoutes from "./routes/tagRoutes.ts";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -26,6 +33,11 @@ const fastify = Fastify({
 
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
+
+fastify.register(fastifyStatic, {
+    root: path.join(__dirname, "..", "..", "frontend", "dist"),
+    prefix: "/",
+});
 
 if (process.env.NODE_ENV === "development") {
     console.log("Development mode: Enabling CORS for all origins");
@@ -45,6 +57,10 @@ fastify.register(betterAuthAdapterPlugin);
 fastify.register(tagRoutes, { prefix: "/api/tags" });
 fastify.register(bookmarkRoutes, { prefix: "/api/bookmarks" });
 fastify.register(collectionRoutes, { prefix: "/api/collections" });
+
+fastify.register(serveFrontendPlugin, {
+    rootDir: __dirname,
+});
 
 try {
     await fastify.listen({ port: 3000, host: "127.0.0.1" });
