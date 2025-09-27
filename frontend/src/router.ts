@@ -1,14 +1,8 @@
+import { lazy } from "react";
 import { createBrowserRouter, redirect } from "react-router";
 import { authClient } from "./authClient";
-import AboutPage from "./pages/About";
-import BookmarksPage, { bookmarksLoader } from "./pages/Bookmarks";
-import CollectionPage, { collectionLoader } from "./pages/Collection";
-import CollectionsPage, { collectionsLoader } from "./pages/Collections";
 import ErrorPage from "./pages/Error";
 import RootLayout, { rootLoader } from "./pages/Root";
-import SignInPage from "./pages/SignIn";
-import SignUpPage from "./pages/SignUp";
-import UserSettingsPage, { userSettingsLoader } from "./pages/UserSettings";
 
 export const router = createBrowserRouter([
     {
@@ -32,35 +26,47 @@ export const router = createBrowserRouter([
             },
             {
                 path: "sign-up",
-                Component: SignUpPage,
+                Component: lazy(() => import("./pages/SignUp")),
             },
             {
                 path: "sign-in",
-                Component: SignInPage,
+                Component: lazy(() => import("./pages/SignIn")),
             },
             {
                 path: "about",
-                Component: AboutPage,
+                Component: lazy(() => import("./pages/About")),
             },
             {
                 path: "bookmarks",
-                Component: BookmarksPage,
-                loader: bookmarksLoader,
+                Component: lazy(() => import("./pages/Bookmarks")),
+                loader: () =>
+                    import("./pages/Bookmarks").then((module) =>
+                        module.bookmarksLoader()
+                    ),
             },
             {
                 path: "collections",
-                Component: CollectionsPage,
-                loader: collectionsLoader,
+                Component: lazy(() => import("./pages/Collections")),
+                loader: () =>
+                    import("./pages/Collections").then((module) =>
+                        module.collectionsLoader()
+                    ),
             },
             {
                 path: "collections/:id",
-                Component: CollectionPage,
-                loader: collectionLoader,
+                Component: lazy(() => import("./pages/Collection")),
+                loader: (args) =>
+                    import("./pages/Collection").then((module) =>
+                        module.collectionLoader(args)
+                    ),
             },
             {
                 path: "user-settings",
-                Component: UserSettingsPage,
-                loader: userSettingsLoader,
+                Component: lazy(() => import("./pages/UserSettings")),
+                loader: () =>
+                    import("./pages/UserSettings").then((module) =>
+                        module.userSettingsLoader()
+                    ),
             },
         ],
     },

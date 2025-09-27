@@ -1,11 +1,13 @@
+import { Suspense } from "react";
 import { Outlet, useLoaderData } from "react-router";
 import { authClient } from "../authClient";
 import { SessionProvider } from "../SessionContext";
-import NavBar from "../components/NavBar";
-import MobileNav from "../components/MobileNav";
 import AddBookmarkModal from "../components/AddBookmarkModal";
 import AddCollectionModal from "../components/AddCollectionModal";
 import GlobalSnackbar from "../components/GlobalSnackbar";
+import LoadingFallback from "../components/LoadingFallback";
+import MobileNav from "../components/MobileNav";
+import NavBar from "../components/NavBar";
 
 export default function RootLayout() {
     const sessionData = useLoaderData();
@@ -15,7 +17,9 @@ export default function RootLayout() {
             <SessionProvider initialSessionData={sessionData}>
                 <NavBar />
                 <main>
-                    <Outlet />
+                    <Suspense fallback={<LoadingFallback />}>
+                        <Outlet />
+                    </Suspense>
                 </main>
                 <MobileNav />
                 <AddBookmarkModal />
